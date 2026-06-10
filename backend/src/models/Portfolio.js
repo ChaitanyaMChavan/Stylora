@@ -5,32 +5,72 @@ const portfolioSchema = new mongoose.Schema(
     designerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: [true, "Designer ID is required"],
+      required: true,
+      index: true,
     },
+
     title: {
       type: String,
-      required: [true, "Title is required"],
+      required: true,
       trim: true,
+      maxlength: 150,
     },
-    images: {
-      type: [String],
-      default: [],
-    },
-    category: {
-      type: String,
-      trim: true,
-    },
+
     description: {
       type: String,
       trim: true,
+      maxlength: 1000,
+      default: "",
+    },
+
+    category: {
+      type: String,
+      trim: true,
+      maxlength: 100,
+      default: "",
+    },
+
+    images: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: (arr) => arr.length <= 10,
+        message: "Maximum 10 images allowed",
+      },
+    },
+
+    tags: {
+      type: [String],
+      default: [],
+    },
+
+    priceRange: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    featured: {
+      type: Boolean,
+      default: false,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-portfolioSchema.index({ designerId: 1 });
-portfolioSchema.index({ designerId: 1, title: 1 }, { unique: true });
+// Existing uniqueness protection
+portfolioSchema.index(
+  { designerId: 1, title: 1 },
+  { unique: true }
+);
+
+// Search optimization
 portfolioSchema.index({ category: 1 });
 portfolioSchema.index({ createdAt: -1 });
 
-module.exports = mongoose.model("Portfolio", portfolioSchema);
+module.exports = mongoose.model(
+  "Portfolio",
+  portfolioSchema
+);
