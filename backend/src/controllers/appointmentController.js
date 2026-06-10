@@ -1,7 +1,11 @@
 const Appointment = require("../models/Appointment");
 
 //create appointment
-const createAppointment = async (req, res, next) => {
+const createAppointment = async (
+  req,
+  res,
+  next
+) => {
   try {
     const {
       designerId,
@@ -23,27 +27,83 @@ const createAppointment = async (req, res, next) => {
     ) {
       return res.status(400).json({
         success: false,
-        message: "All required fields must be provided",
+        message:
+          "All required fields must be provided",
       });
     }
 
-    const appointment = await Appointment.create({
-      clientId: req.user.userId,
-      designerId,
-      appointmentDate,
-      appointmentTime,
-      serviceType,
-      notes,
-      contactPhone,
-      location,
-    });
+    if (designerId === req.user.userId) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "You cannot book yourself",
+      });
+    }
+
+    const bookingDate =
+      new Date(appointmentDate);
+
+    const today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+
+    if (bookingDate < today) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Appointment date must be in the future",
+      });
+    }
+
+    const existingSlot =
+      await Appointment.findOne({
+        designerId,
+        appointmentDate,
+        appointmentTime,
+
+        status: {
+          $nin: [
+            "cancelled",
+            "rejected",
+          ],
+        },
+      });
+
+    if (existingSlot) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "Designer already booked for this time slot",
+      });
+    }
+
+    const appointment =
+      await Appointment.create({
+        clientId: req.user.userId,
+        designerId,
+        appointmentDate,
+        appointmentTime,
+        serviceType,
+        notes,
+        contactPhone,
+        location,
+      });
 
     return res.status(201).json({
       success: true,
-      message: "Appointment booked successfully",
+      message:
+        "Appointment booked successfully",
       appointment,
     });
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "Appointment already exists",
+      });
+    }
+
     next(error);
   }
 };
@@ -150,7 +210,8 @@ const acceptAppointment = async (
     if (!appointment) {
       return res.status(404).json({
         success: false,
-        message: "Appointment not found",
+        message:
+          "Appointment not found",
       });
     }
 
@@ -160,7 +221,20 @@ const acceptAppointment = async (
     ) {
       return res.status(403).json({
         success: false,
-        message: "Unauthorized",
+        message:
+          "Unauthorized access",
+      });
+    }
+
+    if (
+      !canTransition(
+        appointment.status,
+        "accepted"
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot change appointment from ${appointment.status} to accepted`,
       });
     }
 
@@ -168,10 +242,11 @@ const acceptAppointment = async (
 
     await appointment.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message:
         "Appointment accepted successfully",
+      appointment,
     });
   } catch (error) {
     next(error);
@@ -193,7 +268,8 @@ const rejectAppointment = async (
     if (!appointment) {
       return res.status(404).json({
         success: false,
-        message: "Appointment not found",
+        message:
+          "Appointment not found",
       });
     }
 
@@ -203,7 +279,20 @@ const rejectAppointment = async (
     ) {
       return res.status(403).json({
         success: false,
-        message: "Unauthorized",
+        message:
+          "Unauthorized access",
+      });
+    }
+
+    if (
+      !canTransition(
+        appointment.status,
+        "rejected"
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot change appointment from ${appointment.status} to rejected`,
       });
     }
 
@@ -211,10 +300,11 @@ const rejectAppointment = async (
 
     await appointment.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message:
         "Appointment rejected successfully",
+      appointment,
     });
   } catch (error) {
     next(error);
@@ -236,7 +326,8 @@ const completeAppointment = async (
     if (!appointment) {
       return res.status(404).json({
         success: false,
-        message: "Appointment not found",
+        message:
+          "Appointment not found",
       });
     }
 
@@ -246,7 +337,20 @@ const completeAppointment = async (
     ) {
       return res.status(403).json({
         success: false,
-        message: "Unauthorized",
+        message:
+          "Unauthorized access",
+      });
+    }
+
+    if (
+      !canTransition(
+        appointment.status,
+        "completed"
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot change appointment from ${appointment.status} to completed`,
       });
     }
 
@@ -254,10 +358,11 @@ const completeAppointment = async (
 
     await appointment.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message:
-        "Appointment marked completed",
+        "Appointment completed successfully",
+      appointment,
     });
   } catch (error) {
     next(error);
@@ -279,11 +384,13 @@ const cancelAppointment = async (
     if (!appointment) {
       return res.status(404).json({
         success: false,
-        message: "Appointment not found",
+        message:
+          "Appointment not found",
       });
     }
 
-    const userId = req.user.userId;
+    const userId =
+      req.user.userId;
 
     const allowed =
       appointment.clientId.toString() ===
@@ -294,25 +401,55 @@ const cancelAppointment = async (
     if (!allowed) {
       return res.status(403).json({
         success: false,
-        message: "Unauthorized",
+        message:
+          "Unauthorized access",
       });
     }
 
-    appointment.status = "cancelled";
+    if (
+      !canTransition(
+        appointment.status,
+        "cancelled"
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot change appointment from ${appointment.status} to cancelled`,
+      });
+    }
+
+    appointment.status =
+      "cancelled";
 
     appointment.cancellationReason =
       req.body.reason || "";
 
     await appointment.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message:
         "Appointment cancelled successfully",
+      appointment,
     });
   } catch (error) {
     next(error);
   }
+};
+
+//valid_Transitions 
+const VALID_TRANSITIONS = {
+  pending: ["accepted", "rejected", "cancelled"],
+  accepted: ["completed", "cancelled"],
+  rejected: [],
+  completed: [],
+  cancelled: [],
+};
+
+const canTransition = (currentStatus, nextStatus) => {
+  return VALID_TRANSITIONS[currentStatus]?.includes(
+    nextStatus
+  );
 };
 
 module.exports = {
@@ -324,4 +461,5 @@ module.exports = {
   rejectAppointment,
   completeAppointment,
   cancelAppointment,
+  canTransition,
 };
