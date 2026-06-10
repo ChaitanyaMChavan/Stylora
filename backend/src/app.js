@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
+const designerRoutes = require("./routes/designerRoutes");
 
 const app = express();
 
@@ -14,6 +15,8 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+
+app.use("/api/designers", designerRoutes);
 
 // 3. Centralized JSON Error Handler Middleware
 app.use((err, req, res, next) => {

@@ -5,28 +5,69 @@ const designerProfileSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: [true, "User ID is required"],
+      required: true,
+      unique: true,
+      index: true,
     },
+
     bio: {
       type: String,
       trim: true,
+      maxlength: 500,
+      default: "",
     },
-    experience: {
-      type: Number,
-      min: [0, "Experience cannot be negative"],
-    },
+
     location: {
       type: String,
       trim: true,
+      maxlength: 100,
+      default: "",
     },
+
     style: {
       type: String,
       trim: true,
+      maxlength: 100,
+      default: "",
+    },
+
+    experience: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+
+    specialization: {
+      type: String,
+      trim: true,
+      maxlength: 100,
+      default: "",
+    },
+
+    phone: {
+      type: String,
+      trim: true,
+      maxlength: 20,
+      default: "",
+    },
+
+    profileImage: {
+      type: String,
+      default: "",
+    },
+
+    isAvailable: {
+      type: Boolean,
+      default: true,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-designerProfileSchema.index({ userId: 1 }, { unique: true });
 
-module.exports = mongoose.model("DesignerProfile", designerProfileSchema);
+module.exports = mongoose.model(
+  "DesignerProfile",
+  designerProfileSchema
+);
