@@ -6,6 +6,7 @@ const portfolioRoutes = require("./routes/portfolioRoutes");
 const appointmentRoutes = require("./routes/appointmentRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
 
 const app = express();
 
@@ -29,6 +30,8 @@ app.use("/api/appointments", appointmentRoutes);
 app.use("/api/notifications", notificationRoutes);
 
 app.use("/api/reviews",reviewRoutes);
+
+app.use("/api/dashboard", dashboardRoutes);
 
 // 3. Centralized JSON Error Handler Middleware
 app.use((err, req, res, next) => {
