@@ -1,4 +1,5 @@
 const Appointment = require("../models/Appointment");
+const Notification = require("../models/Notification");
 
 //create appointment
 const createAppointment = async (
@@ -88,6 +89,17 @@ const createAppointment = async (
         contactPhone,
         location,
       });
+
+      await Notification.create({
+  userId: designerId,
+
+  title: "New Appointment Request",
+
+  message:
+    "You have received a new appointment request.",
+
+  type: "appointment",
+});
 
     return res.status(201).json({
       success: true,
@@ -242,6 +254,17 @@ const acceptAppointment = async (
 
     await appointment.save();
 
+    await Notification.create({
+  userId: appointment.clientId,
+
+  title: "Appointment Accepted",
+
+  message:
+    "Your appointment request has been accepted.",
+
+  type: "appointment",
+});
+
     return res.status(200).json({
       success: true,
       message:
@@ -300,6 +323,17 @@ const rejectAppointment = async (
 
     await appointment.save();
 
+    await Notification.create({
+  userId: appointment.clientId,
+
+  title: "Appointment Rejected",
+
+  message:
+    "Your appointment request has been rejected.",
+
+  type: "appointment",
+});
+
     return res.status(200).json({
       success: true,
       message:
@@ -357,6 +391,17 @@ const completeAppointment = async (
     appointment.status = "completed";
 
     await appointment.save();
+
+    await Notification.create({
+  userId: appointment.clientId,
+
+  title: "Appointment Completed",
+
+  message:
+    "Your appointment has been completed.",
+
+  type: "appointment",
+});
 
     return res.status(200).json({
       success: true,
@@ -425,6 +470,23 @@ const cancelAppointment = async (
       req.body.reason || "";
 
     await appointment.save();
+
+    const targetUser =
+appointment.clientId.toString() ===
+req.user.userId
+  ? appointment.designerId
+  : appointment.clientId;
+
+await Notification.create({
+  userId: targetUser,
+
+  title: "Appointment Cancelled",
+
+  message:
+    "An appointment has been cancelled.",
+
+  type: "appointment",
+});
 
     return res.status(200).json({
       success: true,

@@ -5,6 +5,7 @@ const User = require("./models/User");
 const DesignerProfile = require("./models/DesignerProfile");
 const Portfolio = require("./models/Portfolio");
 const Appointment = require("./models/Appointment");
+const Notification = require("./models/Notification");
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ const syncModelIndexes = async () => {
     DesignerProfile.syncIndexes(),
     Portfolio.syncIndexes(),
     Appointment.syncIndexes(),
+    Notification.syncIndexes(),
   ]);
   console.log("Model indexes synchronized");
 };
