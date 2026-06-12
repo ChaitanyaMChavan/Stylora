@@ -514,6 +514,60 @@ const canTransition = (currentStatus, nextStatus) => {
   );
 };
 
+//mark appointment as paid
+const markAppointmentPaid =
+async (req, res, next) => {
+  try {
+
+    const appointment =
+      await Appointment.findById(
+        req.params.id
+      );
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Appointment not found",
+      });
+    }
+
+    if (
+      appointment.clientId.toString() !==
+      req.user.userId
+    ) {
+      return res.status(403).json({
+        success: false,
+        message:
+          "Only client can mark payment",
+      });
+    }
+
+    const { amount } = req.body;
+
+    appointment.paymentStatus =
+      "paid";
+
+    appointment.paymentAmount =
+      amount;
+
+    appointment.paymentDate =
+      new Date();
+
+    await appointment.save();
+
+    res.status(200).json({
+      success: true,
+      message:
+        "Payment marked successfully",
+      appointment,
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createAppointment,
   getMyAppointments,
@@ -524,4 +578,5 @@ module.exports = {
   completeAppointment,
   cancelAppointment,
   canTransition,
+  markAppointmentPaid,
 };

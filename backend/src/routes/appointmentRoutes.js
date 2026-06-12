@@ -9,6 +9,7 @@ const {
   rejectAppointment,
   completeAppointment,
   cancelAppointment,
+  markAppointmentPaid,
 } = require("../controllers/appointmentController");
 
 const { protect } = require("../middleware/authMiddleware");
@@ -88,6 +89,13 @@ router.put(
   "/:id/cancel",
   protect,
   cancelAppointment
+);
+
+// Mark as Paid
+router.put(
+  "/:id/pay",
+  protect,
+  markAppointmentPaid
 );
 
 module.exports = router;
