@@ -1,5 +1,6 @@
 const Review = require("../models/Review");
 const Appointment = require("../models/Appointment");
+const Notification = require("../models/Notification");
 
 /**
  * Create Review
@@ -69,6 +70,17 @@ const createReview = async (req, res, next) => {
 
         comment,
       });
+      await Notification.create({
+  userId:
+    appointment.designerId,
+
+  title: "New Review",
+
+  message:
+    "You have received a new review.",
+
+  type: "review",
+});
 
     res.status(201).json({
       success: true,
@@ -141,15 +153,32 @@ const getDesignerRating =
         totalRating /
         reviews.length;
 
-      res.status(200).json({
-        success: true,
-        averageRating:
-          Number(
-            averageRating.toFixed(1)
-          ),
-        totalReviews:
-          reviews.length,
-      });
+     const breakdown = {
+  1: 0,
+  2: 0,
+  3: 0,
+  4: 0,
+  5: 0,
+};
+
+reviews.forEach((review) => {
+  breakdown[review.rating]++;
+});
+
+res.status(200).json({
+  success: true,
+
+  averageRating:
+    Number(
+      averageRating.toFixed(1)
+    ),
+
+  totalReviews:
+    reviews.length,
+
+  ratingBreakdown:
+    breakdown,
+});
     } catch (error) {
       next(error);
     }

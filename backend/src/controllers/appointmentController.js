@@ -543,20 +543,65 @@ async (req, res, next) => {
       });
     }
 
-    const { amount } = req.body;
+const { amount } = req.body;
 
-    appointment.paymentStatus =
-      "paid";
+if (
+  appointment.status !==
+  "accepted"
+) {
+  return res.status(400).json({
+    success: false,
+    message:
+      "Appointment must be accepted before payment",
+  });
+}
 
-    appointment.paymentAmount =
-      amount;
+if (
+  appointment.paymentStatus ===
+  "paid"
+) {
+  return res.status(400).json({
+    success: false,
+    message:
+      "Appointment already marked as paid",
+  });
+}
 
-    appointment.paymentDate =
-      new Date();
+if (
+  !amount ||
+  Number(amount) <= 0
+) {
+  return res.status(400).json({
+    success: false,
+    message:
+      "Valid payment amount required",
+  });
+}
+
+appointment.paymentStatus =
+  "paid";
+
+appointment.paymentAmount =
+  Number(amount);
+
+appointment.paymentDate =
+  new Date();
 
     await appointment.save();
 
-    res.status(200).json({
+    await Notification.create({
+  userId:
+    appointment.designerId,
+
+  title: "Payment Received",
+
+  message:
+    "Client has marked payment as completed.",
+
+  type: "payment",
+});
+
+res.status(200).json({
       success: true,
       message:
         "Payment marked successfully",
