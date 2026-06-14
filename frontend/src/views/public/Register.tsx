@@ -1,132 +1,163 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { API } from '../../services/api';
 import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/Button';
-import { api } from '../../services/api';
-import { UserPlus, ShieldAlert, CheckCircle } from 'lucide-react';
+import { Shield, ShieldAlert, User, Mail, KeyRound, ArrowUpRight, CheckCircle } from 'lucide-react';
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
-  
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'client' | 'designer'>('client');
   
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleRegistrationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setErrorMsg(null);
     setIsSubmitting(true);
 
     try {
-      const response = await api.post('/auth/register', { name, email, password, role });
+      // Dispatches form payload directly to your backend registration API endpoint
+      await API.post('/auth/register', {
+        name,
+        email,
+        password,
+        role
+      });
+
+      setSuccess(true);
+      setIsSubmitting(false);
       
-      if (response.data.success) {
-        setSuccess('Profile successfully cataloged! Redirecting to lookbook login vault...');
-        setTimeout(() => {
-          navigate('/login');
-        }, 2500);
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration stalled. Email may already possess credentials.');
-    } finally {
+      // Auto-redirect to credentials verification layer after 2 seconds
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Registration pipeline rejected your input.';
+      setErrorMsg(message);
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 animate-fade-in">
-      <Card className="w-full max-w-md bg-white p-8 space-y-6 border border-black/5 luxury-hover">
-        <div className="text-center space-y-1">
-          <h1 className="text-2xl font-luxury uppercase tracking-widest text-black">Join The House</h1>
-          <p className="text-[10px] tracking-widest text-neutral-400 uppercase">Establish your persistent profile credentials</p>
+    <div className="min-h-[80vh] flex items-center justify-center py-6 animate-fade-in">
+      <Card className="w-full max-w-md bg-white p-8 border border-neutral-200/60 rounded-none shadow-none space-y-6">
+        
+        {/* Visual Brand Identity */}
+        <div className="text-center space-y-2">
+          <div className="inline-flex p-3 bg-neutral-950 text-white border border-black rounded-none mb-1">
+            <Shield size={20} className="text-[#D4AF37]" />
+          </div>
+          <h1 className="text-2xl font-luxury uppercase tracking-wider text-black">Create Account</h1>
+          <p className="text-xs text-neutral-400 font-mono">Register new system user signature node</p>
         </div>
 
-        {error && (
-          <div className="p-3 bg-red-50 text-red-600 text-[11px] uppercase tracking-wider font-semibold border border-red-100 flex items-center gap-2">
-            <ShieldAlert size={14} className="shrink-0" /> {error}
-          </div>
-        )}
-
+        {/* Success Alert Window */}
         {success && (
-          <div className="p-3 bg-emerald-50 text-emerald-700 text-[11px] uppercase tracking-wider font-semibold border border-emerald-100 flex items-center gap-2">
-            <CheckCircle size={14} className="shrink-0" /> {success}
+          <div className="p-3 bg-neutral-950 text-white text-xs font-mono flex items-center gap-2 border border-[#D4AF37]">
+            <CheckCircle size={14} className="text-[#D4AF37] shrink-0" />
+            <span>Registration complete! Routing to authorization desk...</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-[10px] tracking-widest uppercase text-neutral-500 font-medium mb-1">Full Legal Name</label>
+        {/* Error Alert Window */}
+        {errorMsg && (
+          <div className="p-3 bg-rose-50 border border-rose-100 text-rose-700 text-xs font-mono flex items-center gap-2">
+            <ShieldAlert size={14} className="shrink-0" />
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
+        {/* Interactive Form Engine */}
+        <form onSubmit={handleRegistrationSubmit} className="space-y-4">
+          <div className="space-y-1">
+            <label className="block text-[9px] tracking-widest uppercase text-neutral-400 font-bold flex items-center gap-1">
+              <User size={10} /> Full Legal Name
+            </label>
             <input 
               type="text" 
-              required
-              className="w-full border border-neutral-200 px-3 py-2.5 text-xs focus:outline-none focus:border-black transition-colors"
-              placeholder="Chaitanya Chavan"
+              required 
+              className="w-full border border-neutral-200 p-3 text-xs focus:outline-none focus:border-black bg-neutral-50/30 rounded-none font-mono"
+              placeholder="e.g. Chaitanya Chavan"
               value={name}
-              onChange={e => setName(e.target.value)}
+              onChange={(e) => setName(e.target.value)}
+              disabled={isSubmitting || success}
             />
           </div>
 
-          <div>
-            <label className="block text-[10px] tracking-widest uppercase text-neutral-500 font-medium mb-1">Digital Mail (Email)</label>
+          <div className="space-y-1">
+            <label className="block text-[9px] tracking-widest uppercase text-neutral-400 font-bold flex items-center gap-1">
+              <Mail size={10} /> Email Identity Address
+            </label>
             <input 
               type="email" 
-              required
-              className="w-full border border-neutral-200 px-3 py-2.5 text-xs focus:outline-none focus:border-black transition-colors"
-              placeholder="chaitanya@example.com"
+              required 
+              className="w-full border border-neutral-200 p-3 text-xs focus:outline-none focus:border-black bg-neutral-50/30 rounded-none font-mono"
+              placeholder="name@example.com"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isSubmitting || success}
             />
           </div>
 
-          <div>
-            <label className="block text-[10px] tracking-widest uppercase text-neutral-500 font-medium mb-1">Secure Passphrase</label>
+          <div className="space-y-1">
+            <label className="block text-[9px] tracking-widest uppercase text-neutral-400 font-bold flex items-center gap-1">
+              <KeyRound size={10} /> Select Account Role
+            </label>
+            <select 
+              className="w-full border border-neutral-200 p-3 text-xs focus:outline-none focus:border-black bg-white rounded-none font-mono"
+              value={role}
+              onChange={(e) => setRole(e.target.value as 'client' | 'designer')}
+              disabled={isSubmitting || success}
+            >
+              <option value="client">Client (Seek Design Commissions)</option>
+              <option value="designer">Designer House (Exhibit Architecture Lookbooks)</option>
+            </select>
+          </div>
+
+          <div className="space-y-1">
+            <label className="block text-[9px] tracking-widest uppercase text-neutral-400 font-bold flex items-center gap-1">
+              <KeyRound size={10} /> Establish Access Keyphrase
+            </label>
             <input 
               type="password" 
-              required
-              className="w-full border border-neutral-200 px-3 py-2.5 text-xs focus:outline-none focus:border-black transition-colors"
-              placeholder="••••••••"
+              required 
+              className="w-full border border-neutral-200 p-3 text-xs focus:outline-none focus:border-black bg-neutral-50/30 rounded-none font-mono"
+              placeholder="••••••••••••"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={isSubmitting || success}
             />
           </div>
 
-          <div>
-            <label className="block text-[10px] tracking-widest uppercase text-neutral-500 font-medium mb-1">Ecosystem Workspace Role</label>
-            <div className="grid grid-cols-2 gap-4 mt-1">
-              <button
-                type="button"
-                className={`py-2 text-center text-xs font-medium uppercase tracking-widest border transition-all cursor-pointer ${role === 'client' ? 'border-black bg-black text-white' : 'border-neutral-200 text-neutral-500 hover:border-black/30'}`}
-                onClick={() => setRole('client')}
-              >
-                Client Space
-              </button>
-              <button
-                type="button"
-                className={`py-2 text-center text-xs font-medium uppercase tracking-widest border transition-all cursor-pointer ${role === 'designer' ? 'border-black bg-black text-white' : 'border-neutral-200 text-neutral-500 hover:border-black/30'}`}
-                onClick={() => setRole('designer')}
-              >
-                Atelier Master
-              </button>
-            </div>
-          </div>
-
-          <Button type="submit" variant="primary" fullWidth size="md" className="mt-4" disabled={isSubmitting}>
-            <UserPlus size={12} className="mr-1.5" /> {isSubmitting ? 'Registering Structural Unit...' : 'Commit Registry Portfolio'}
+          <Button 
+            type="submit" 
+            variant="primary" 
+            fullWidth 
+            disabled={isSubmitting || success}
+            className="pt-3.5 pb-3.5"
+          >
+            {isSubmitting ? 'Registering Identity Core...' : 'Generate System Signature'}
           </Button>
         </form>
 
-        <div className="text-center text-xs text-neutral-400 font-light pt-1">
-          Already belong to the atelier?{' '}
-          <Link to="/login" className="text-black font-semibold uppercase tracking-wider underline underline-offset-4">
-            Authorize Entry
-          </Link>
+        {/* Redirect Bridge Link */}
+        <div className="border-t border-neutral-100 pt-4 text-center">
+          <p className="text-[11px] font-mono text-neutral-400">
+            Already have a signed certificate?{' '}
+            <Link to="/login" className="text-black font-bold hover:underline inline-flex items-center gap-0.5">
+              Sign In <ArrowUpRight size={10} />
+            </Link>
+          </p>
         </div>
+
       </Card>
     </div>
   );

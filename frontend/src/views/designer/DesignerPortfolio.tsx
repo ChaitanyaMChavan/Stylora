@@ -1,129 +1,101 @@
 import React, { useState } from 'react';
 import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/Button';
-import { Plus, Trash2, FolderHeart } from 'lucide-react';
+import { Plus, Image, Trash2, Sparkles, CheckCircle } from 'lucide-react';
 
 export const DesignerPortfolio: React.FC = () => {
-  const [items, setItems] = useState([
-    { id: '1', title: 'Modern Living Room', category: 'Residential', image: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=500&q=80', range: '$$$' },
-    { id: '2', title: 'Glass Pavilion Showroom', category: 'Commercial Space', image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=500&q=80', range: '$$$$' }
+  const [portfolioItems, setPortfolioItems] = useState([
+    { id: 'p1', title: 'The Monolith Lounge', category: 'Residential', img: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=600&q=80' },
+    { id: 'p2', title: 'Brutalist Glass Pavilion', category: 'Commercial Space', img: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=600&q=80' }
   ]);
 
-  const [form, setForm] = useState({ title: '', category: 'Residential', image: '', range: '$$$' });
-  const [isAdding, setIsAdding] = useState(false);
+  const [form, setForm] = useState({ title: '', category: 'Residential', img: '' });
+  const [success, setSuccess] = useState(false);
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleAddAsset = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title || !form.image) return;
-    
-    setItems(prev => [...prev, { id: Date.now().toString(), ...form }]);
-    setForm({ title: '', category: 'Residential', image: '', range: '$$$' });
-    setIsAdding(false);
+    const newItem = {
+      id: `p-${Date.now()}`,
+      title: form.title.toUpperCase(),
+      category: form.category,
+      img: form.img || 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=600&q=80'
+    };
+    setPortfolioItems([newItem, ...portfolioItems]);
+    setForm({ title: '', category: 'Residential', img: '' });
+    setSuccess(true);
+    setTimeout(() => setSuccess(false), 3000);
   };
 
-  const handleDelete = (id: string) => {
-    setItems(prev => prev.filter(item => item.id !== id));
+  const handleDeleteAsset = (id: string) => {
+    setPortfolioItems(prev => prev.filter(item => item.id !== id));
   };
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-black/5 pb-4">
-        <div>
-          <h1 className="text-3xl font-luxury text-black uppercase tracking-wide">Portfolio Studio</h1>
-          <p className="text-[10px] tracking-widest text-neutral-400 uppercase mt-0.5">Exhibit your interior architecture blueprints</p>
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 py-2 animate-fade-in items-start">
+      
+      {/* Asset Registration Terminal */}
+      <div className="lg:col-span-4 space-y-4">
+        <div className="space-y-1">
+          <span className="text-[10px] tracking-widest text-[#D4AF37] uppercase font-bold">Lookbook Curator Engine</span>
+          <h1 className="text-2xl font-luxury uppercase tracking-wide text-black">Append Lookbook Asset</h1>
         </div>
-        <Button variant="primary" size="sm" onClick={() => setIsAdding(!isAdding)}>
-          <Plus size={14} className="mr-1" /> {isAdding ? 'Close Studio Deck' : 'Add Lookbook Work'}
-        </Button>
-      </div>
 
-      {isAdding && (
-        <form onSubmit={handleCreate} className="border border-black/5 bg-white p-6 max-w-xl space-y-4 luxury-hover">
-          <h3 className="text-xs uppercase tracking-widest font-bold text-black mb-2 flex items-center gap-1">
-            <FolderHeart size={14} className="text-[#D4AF37]" /> Log Fine Creative Asset
-          </h3>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[10px] tracking-widest uppercase text-neutral-500 font-medium mb-1">Asset Title</label>
-              <input 
-                type="text" 
-                required 
-                className="w-full border border-neutral-200 px-3 py-2 text-xs focus:outline-none focus:border-black"
-                placeholder="The Monolith Lounge"
-                value={form.title}
-                onChange={e => setForm({ ...form, title: e.target.value })}
-              />
+        <Card className="bg-white p-6 border border-neutral-200/60 rounded-none shadow-none">
+          {success && (
+            <div className="mb-4 p-3 bg-neutral-950 text-white text-[9px] uppercase tracking-widest font-bold border border-[#D4AF37] flex items-center gap-2 animate-slide-in">
+              <CheckCircle size={12} className="text-[#D4AF37]" /> Blueprint asset linked to portfolio matrix successfully.
             </div>
+          )}
+
+          <form onSubmit={handleAddAsset} className="space-y-4">
             <div>
-              <label className="block text-[10px] tracking-widest uppercase text-neutral-500 font-medium mb-1">Price Hierarchy</label>
-              <select 
-                className="w-full border border-neutral-200 px-3 py-2 text-xs focus:outline-none focus:border-black bg-white"
-                value={form.range}
-                onChange={e => setForm({ ...form, range: e.target.value })}
-              >
-                <option value="$">$ (Minimal)</option>
-                <option value="$$">$$ (Standard)</option>
-                <option value="$$$">$$$ (Premium)</option>
-                <option value="$$$$">$$$$ (Ultra Luxury)</option>
+              <label className="block text-[9px] tracking-widest uppercase text-neutral-400 font-bold mb-1">Asset Concept Name</label>
+              <input type="text" required className="w-full border border-neutral-200 px-3 py-2 text-xs focus:outline-none focus:border-black rounded-none font-mono" placeholder="VELVET HORIZON DINING ROOM" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
+            </div>
+
+            <div>
+              <label className="block text-[9px] tracking-widest uppercase text-neutral-400 font-bold mb-1">Spatial Context Category</label>
+              <select className="w-full border border-neutral-200 px-3 py-2 text-xs focus:outline-none focus:border-black bg-white rounded-none font-mono" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
+                <option value="Residential">Residential</option>
+                <option value="Commercial Space">Commercial Space</option>
+                <option value="Hospitality Layout">Hospitality Layout</option>
               </select>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-[10px] tracking-widest uppercase text-neutral-500 font-medium mb-1">Category Type</label>
-            <select 
-              className="w-full border border-neutral-200 px-3 py-2 text-xs focus:outline-none focus:border-black bg-white"
-              value={form.category}
-              onChange={e => setForm({ ...form, category: e.target.value })}
-            >
-              <option value="Residential">Residential Development</option>
-              <option value="Commercial Space">Commercial Space</option>
-              <option value="Furniture Design">Furniture Design</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-[10px] tracking-widest uppercase text-neutral-500 font-medium mb-1">Image Presentation URL</label>
-            <input 
-              type="url" 
-              required 
-              className="w-full border border-neutral-200 px-3 py-2 text-xs focus:outline-none focus:border-black"
-              placeholder="https://images.unsplash.com/..."
-              value={form.image}
-              onChange={e => setForm({ ...form, image: e.target.value })}
-            />
-          </div>
-
-          <Button type="submit" variant="primary" size="sm">Publish to Atelier Index</Button>
-        </form>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {items.map((item) => (
-          <Card key={item.id} className="p-0 overflow-hidden flex flex-col justify-between group">
-            <div className="h-56 bg-neutral-100 overflow-hidden relative">
-              <img src={item.image} alt={item.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-              <div className="absolute top-2 left-2 bg-black text-white text-[9px] uppercase tracking-widest px-2 py-0.5 font-bold">
-                {item.range}
-              </div>
+            <div>
+              <label className="block text-[9px] tracking-widest uppercase text-neutral-400 font-bold mb-1">Blueprint Imagery Link (URL)</label>
+              <input type="url" className="w-full border border-neutral-200 px-3 py-2 text-xs focus:outline-none focus:border-black rounded-none font-mono" placeholder="https://images.unsplash.com/..." value={form.img} onChange={e => setForm({ ...form, img: e.target.value })} />
             </div>
-            <div className="p-4 flex items-center justify-between">
-              <div>
-                <span className="text-[9px] tracking-widest text-[#D4AF37] uppercase block font-bold">{item.category}</span>
-                <h4 className="text-xs uppercase font-bold text-black tracking-wide mt-0.5">{item.title}</h4>
-              </div>
-              <button 
-                onClick={() => handleDelete(item.id)}
-                className="text-neutral-300 hover:text-red-600 transition-colors cursor-pointer p-1"
-                title="Remove Lookbook Item"
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
-          </Card>
-        ))}
+
+            <Button type="submit" variant="primary" size="sm" fullWidth>
+              <Plus size={12} className="mr-1" /> Append Framework Asset
+            </Button>
+          </form>
+        </Card>
       </div>
+
+      {/* Exhibition Grid Stream */}
+      <div className="lg:col-span-8 space-y-4">
+        <h3 className="text-xs uppercase tracking-widest font-bold text-black border-b border-neutral-100 pb-2">Currently Cataloged Lookbook Blueprint Matrix</h3>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {portfolioItems.map((item) => (
+            <Card key={item.id} className="p-0 overflow-hidden bg-white border border-neutral-200/60 rounded-none shadow-none flex flex-col justify-between group relative">
+              <div className="h-48 bg-neutral-100 overflow-hidden relative">
+                <img src={item.img} alt={item.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 grayscale group-hover:grayscale-0" />
+                <button onClick={() => handleDeleteAsset(item.id)} className="absolute top-2 right-2 bg-black text-white p-2 hover:bg-rose-700 transition-colors cursor-pointer border border-white/10 shadow-lg">
+                  <Trash2 size={12} />
+                </button>
+              </div>
+              <div className="p-4 bg-white space-y-0.5">
+                <span className="text-[9px] tracking-widest font-bold text-[#D4AF37] uppercase font-mono block">{item.category}</span>
+                <h4 className="text-xs uppercase font-bold text-black tracking-wide font-mono truncate">{item.title}</h4>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+
     </div>
   );
 };

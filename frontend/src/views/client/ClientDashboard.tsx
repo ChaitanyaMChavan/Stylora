@@ -2,88 +2,113 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/Button';
-import { Calendar, Bell, Star, ArrowUpRight } from 'lucide-react';
+import { Calendar, Clock, MapPin, Sparkles, ArrowUpRight, MessageSquare } from 'lucide-react';
 
 export const ClientDashboard: React.FC = () => {
   const navigate = useNavigate();
 
-  // Mock aggregated metrics tracking client states
-  const metrics = [
-    { label: 'Active Projects', count: '2', icon: <Calendar size={16} className="text-[#D4AF37]" /> },
-    { label: 'Unread Alerts', count: '3', icon: <Bell size={16} className="text-black" /> },
-    { label: 'Published Reviews', count: '5', icon: <Star size={16} className="text-[#D4AF37]" /> },
-  ];
-
-  const ongoingConsultations = [
-    { id: 'APT-902', designer: 'Eleanor Vance', date: 'Oct 25, 2024', status: 'accepted', type: 'Consultation' },
-    { id: 'APT-741', designer: 'Atelier Maurice', date: 'Nov 02, 2024', status: 'pending', type: 'Spatial Auditing' },
+  // Mock active engagements mapped perfectly to your Appointment model payload shape
+  const activeAppointments = [
+    {
+      id: 'APT-8492',
+      designerName: 'Atelier Maurice',
+      appointmentDate: '2026-07-14',
+      appointmentTime: '10:00 AM',
+      serviceType: 'Consultation',
+      status: 'accepted',
+      location: 'Penthouse Suite B, Koregaon Park'
+    },
+    {
+      id: 'APT-9102',
+      designerName: 'Vanguard Structural',
+      appointmentDate: '2026-07-28',
+      appointmentTime: '02:30 PM',
+      serviceType: 'Spatial Auditing',
+      status: 'pending',
+      location: 'Commercial Studio Annex'
+    }
   ];
 
   return (
-    <div className="space-y-10 animate-fade-in">
+    <div className="space-y-10 py-2 animate-fade-in">
       {/* Editorial Welcome Header */}
-      <div>
-        <h1 className="text-3xl font-luxury text-black uppercase tracking-wide">The Salon Workspace</h1>
-        <p className="text-[10px] tracking-widest text-neutral-400 uppercase mt-0.5">Manage your private spatial commissions</p>
+      <div className="border-b border-black/5 pb-6 space-y-1">
+        <div className="inline-flex items-center gap-1.5 text-[9px] uppercase tracking-widest text-[#D4AF37] font-bold">
+          <Sparkles size={10} /> Client Session Terminal // Active
+        </div>
+        <h1 className="text-3xl font-luxury uppercase tracking-wide text-black">
+          Welcome Back, Chaitanya Chavan
+        </h1>
+        <p className="text-xs text-neutral-400 font-mono font-light">
+          Monitor your private blueprints, active consultation pipelines, and design studio streams.
+        </p>
       </div>
 
-      {/* Grid Metrics Rows */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {metrics.map((metric, idx) => (
-          <Card key={idx} className="bg-white p-6 flex items-center justify-between group">
-            <div className="space-y-1">
-              <span className="text-[10px] tracking-widest text-neutral-400 uppercase block font-medium">{metric.label}</span>
-              <span className="text-3xl font-luxury font-light text-black block">{metric.count}</span>
-            </div>
-            <div className="p-3 border border-neutral-100 group-hover:border-black/10 transition-colors">
-              {metric.icon}
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      {/* Direct Workspace Operational Splitting Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        {/* Main Section: Booking Overviews */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-            <h3 className="text-xs uppercase tracking-widest font-bold text-black">Active Consultations</h3>
-            <Button variant="outline" size="sm" className="text-[10px] p-0" onClick={() => navigate('/client/appointments')}>
-              View All Windows <ArrowUpRight size={12} className="ml-1" />
+      {/* Metrics Row Blocks */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <Card className="bg-white p-6 border border-neutral-200/60 rounded-none shadow-none flex flex-col justify-between">
+          <span className="text-[9px] tracking-widest text-neutral-400 uppercase font-bold">Total Dispatched Briefs</span>
+          <div className="flex items-baseline gap-2 pt-2">
+            <span className="text-3xl font-luxury text-black">02</span>
+            <span className="text-[10px] text-emerald-600 font-mono font-bold uppercase">Active Stream</span>
+          </div>
+        </Card>
+        <Card className="bg-white p-6 border border-neutral-200/60 rounded-none shadow-none flex flex-col justify-between">
+          <span className="text-[9px] tracking-widest text-neutral-400 uppercase font-bold">Verified Atelier Clearances</span>
+          <div className="flex items-baseline gap-2 pt-2">
+            <span className="text-3xl font-luxury text-black">01</span>
+            <span className="text-[10px] text-[#D4AF37] font-mono font-bold uppercase">Confirmed Room</span>
+          </div>
+        </Card>
+        <Card className="bg-neutral-950 border border-black p-6 flex flex-col justify-between text-white relative overflow-hidden">
+          <span className="text-[9px] tracking-widest text-[#D4AF37] uppercase font-bold z-10">Instant Concierge Channel</span>
+          <p className="text-xs text-neutral-400 font-light font-mono pt-2 z-10">Need system assistance?</p>
+          <div className="pt-4 z-10">
+            <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white hover:text-black w-full" onClick={() => navigate('/contact')}>
+              Open Desk <ArrowUpRight size={10} className="ml-1" />
             </Button>
           </div>
+        </Card>
+      </div>
 
-          <div className="space-y-3">
-            {ongoingConsultations.map((apt) => (
-              <div key={apt.id} className="border border-black/5 bg-white p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <span className="text-[9px] tracking-widest text-neutral-400 uppercase block">{apt.id} • {apt.type}</span>
-                  <h4 className="text-sm font-semibold uppercase text-black tracking-wide">{apt.designer}</h4>
-                  <p className="text-xs text-neutral-500 font-light">{apt.date}</p>
-                </div>
-                
-                <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
-                  <span className={`text-[9px] tracking-widest uppercase font-bold px-3 py-1 border ${
-                    apt.status === 'accepted' ? 'text-emerald-700 bg-emerald-50/50 border-emerald-200/40' : 'text-amber-700 bg-amber-50/50 border-amber-200/40'
-                  }`}>
-                    {apt.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* Live Appointments Action Feed Container */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between border-b border-neutral-100 pb-2">
+          <h3 className="text-xs uppercase tracking-widest font-bold text-black">Active Workspace Matrix</h3>
+          <span className="text-[9px] tracking-widest text-neutral-400 uppercase font-mono">Realtime Ledger</span>
         </div>
 
-        {/* Side Panel: Quick Actions Context Card */}
-        <aside className="border border-black/5 bg-black text-white p-6 space-y-4">
-          <h3 className="text-xs uppercase tracking-widest font-bold text-[#D4AF37]">Design Concierge</h3>
-          <p className="text-xs text-neutral-400 leading-relaxed font-light">
-            Ready to initiate a brand-new space transform blueprint? Look through our certified, curated master roster index.
-          </p>
-          <Button variant="outline" size="sm" fullWidth onClick={() => navigate('/designers')}>
-            Browse The Atelier Index
-          </Button>
-        </aside>
+        <div className="space-y-4">
+          {activeAppointments.map((apt) => (
+            <Card key={apt.id} className="bg-white p-6 border border-neutral-200/60 rounded-none shadow-none luxury-hover grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+              <div className="space-y-1">
+                <span className="text-[9px] font-mono text-neutral-400 block">{apt.id}</span>
+                <h4 className="text-sm font-luxury uppercase tracking-wider text-black">{apt.designerName}</h4>
+                <span className="text-[10px] text-neutral-400 font-light italic block">{apt.serviceType}</span>
+              </div>
+
+              <div className="space-y-1 text-xs text-neutral-600 font-mono">
+                <div className="flex items-center gap-1.5"><Calendar size={12} className="text-black" /> {apt.appointmentDate}</div>
+                <div className="flex items-center gap-1.5"><Clock size={12} className="text-neutral-400" /> {apt.appointmentTime}</div>
+              </div>
+
+              <div className="flex items-center gap-1.5 text-xs text-neutral-500 font-light">
+                <MapPin size={12} className="text-[#D4AF37] shrink-0" />
+                <span className="truncate">{apt.location}</span>
+              </div>
+
+              <div className="flex items-center justify-between md:justify-end gap-4">
+                <span className={`text-[9px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 border ${
+                  apt.status === 'accepted' 
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                    : 'bg-amber-50 text-amber-700 border-amber-200'
+                }`}>
+                  {apt.status}
+                </span>
+              </div>
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   );

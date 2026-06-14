@@ -1,42 +1,44 @@
 import React from 'react';
 import { Card } from '../../components/ui/card';
-import { Clock, Briefcase, RefreshCw } from 'lucide-react';
+import { Calendar, User, LayoutDashboard, Clock } from 'lucide-react';
 
 export const AdminAppointments: React.FC = () => {
-  const systemAppointments = [
-    { id: 'APT-902', client: 'John Doe', designer: 'Eleanor Vance', date: '2026-10-25', status: 'accepted' },
-    { id: 'APT-741', client: 'Sarah Connor', designer: 'Atelier Maurice', date: '2026-11-02', status: 'pending' },
+  const masterLog = [
+    { aid: 'APT-8492', client: 'Chaitanya Chavan', designer: 'Atelier Maurice', date: '2026-07-14', time: '10:00 AM', status: 'accepted' },
+    { aid: 'APT-9102', client: 'Ananya Sharma', designer: 'Vanguard Structural', date: '2026-07-28', time: '02:30 PM', status: 'pending' }
   ];
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-luxury text-black uppercase tracking-wide">Global Appointment Matrix</h1>
-        <p className="text-[10px] tracking-widest text-neutral-400 uppercase mt-0.5">Platform consultation ledger queue</p>
+    <div className="space-y-10 py-2 animate-fade-in">
+      <div className="border-b border-black/5 pb-6">
+        <span className="text-[10px] tracking-widest text-[#D4AF37] uppercase font-bold">Cross-Network Audit Trail</span>
+        <h1 className="text-3xl font-luxury uppercase tracking-wide text-black">System Appointments Master Log</h1>
       </div>
 
       <div className="space-y-4">
-        {systemAppointments.map((apt) => (
-          <Card key={apt.id} className="p-5 bg-white border border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-grow items-center text-xs">
-              <div>
-                <span className="text-[9px] tracking-widest text-neutral-400 uppercase block font-bold">Appointment ID</span>
-                <span className="font-mono font-bold text-neutral-800">{apt.id}</span>
-              </div>
-              <div>
-                <span className="text-[9px] tracking-widest text-neutral-400 uppercase block">Logistical Edge Entities</span>
-                <span className="font-semibold uppercase text-black tracking-wide">{apt.client} <span className="text-neutral-400 font-light lowercase">→</span> {apt.designer}</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-neutral-500 font-light">
-                <Clock size={12} className="text-black" /> {apt.date}
-              </div>
+        {masterLog.map((log) => (
+          <Card key={log.aid} className="bg-white p-6 border border-neutral-200/60 rounded-none shadow-none grid grid-cols-1 md:grid-cols-4 gap-4 items-center font-mono text-xs">
+            <div className="space-y-1">
+              <span className="text-[9px] text-neutral-400 block">{log.aid}</span>
+              <div className="flex items-center gap-1.5 text-black"><User size={12} className="text-[#D4AF37]" /> <span className="uppercase font-bold">{log.client}</span></div>
+              <div className="text-[10px] text-neutral-400">Targeting: {log.designer}</div>
+            </div>
+
+            <div className="space-y-1 text-neutral-600">
+              <div className="flex items-center gap-1.5"><Calendar size={12} /> {log.date}</div>
+              <div className="flex items-center gap-1.5"><Clock size={12} /> {log.time}</div>
             </div>
 
             <div>
-              <span className={`text-[9px] tracking-widest uppercase font-bold px-3 py-1 border block text-center ${
-                apt.status === 'accepted' ? 'border-emerald-200 text-emerald-700 bg-emerald-50' : 'border-amber-200 text-amber-700 bg-amber-50'
+              <span className="text-[10px] uppercase text-neutral-400 block mb-0.5">Stream Router Path</span>
+              <span className="text-neutral-600 text-[11px] font-bold">/api/appointments/verify</span>
+            </div>
+
+            <div className="flex justify-end">
+              <span className={`text-[9px] font-bold uppercase tracking-widest px-3 py-1 border ${
+                log.status === 'accepted' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'
               }`}>
-                {apt.status}
+                {log.status}
               </span>
             </div>
           </Card>

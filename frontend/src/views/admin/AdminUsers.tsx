@@ -1,72 +1,78 @@
 import React, { useState } from 'react';
 import { Card } from '../../components/ui/card';
-import { UserCheck, ShieldAlert } from 'lucide-react';
+import { Button } from '../../components/ui/Button';
+import { ShieldAlert, User, Mail, Trash2 } from 'lucide-react';
 
 export const AdminUsers: React.FC = () => {
   const [users, setUsers] = useState([
-    { id: 'USR-76', name: 'John Doe', email: 'john@example.com', role: 'client', status: 'active' },
-    { id: 'USR-12', name: 'Eleanor Vance', email: 'eleanor@studio.com', role: 'designer', status: 'active' },
-    { id: 'USR-04', name: 'Sarah Connor', email: 'sarah@penthouses.com', role: 'client', status: 'suspended' }
+    { uid: 'USR-901', name: 'Chaitanya Chavan', email: 'chaitanya@example.com', role: 'client', joiningDate: '2026-02-14', status: 'active' },
+    { uid: 'USR-482', name: 'Maurice Lefevre', email: 'maurice@atelier.com', role: 'designer', joiningDate: '2026-01-08', status: 'active' },
+    { uid: 'USR-112', name: 'Admin Terminal', email: 'root@stylora.com', role: 'admin', joiningDate: '2025-10-01', status: 'active' }
   ]);
 
-  const toggleStatus = (id: string) => {
-    setUsers(prev => prev.map(user => 
-      user.id === id ? { ...user, status: user.status === 'active' ? 'suspended' : 'active' } : user
-    ));
+  const toggleSuspend = (uid: string) => {
+    setUsers(prev => prev.map(u => u.uid === uid ? { ...u, status: u.status === 'active' ? 'suspended' : 'active' } : u));
   };
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-luxury text-black uppercase tracking-wide">Users Master Ledger</h1>
-        <p className="text-[10px] tracking-widest text-neutral-400 uppercase mt-0.5">Control global credential records</p>
+    <div className="space-y-10 py-2 animate-fade-in">
+      <div className="border-b border-black/5 pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="space-y-1">
+          <span className="text-[10px] tracking-widest text-[#D4AF37] uppercase font-bold">Identity Records</span>
+          <h1 className="text-3xl font-luxury uppercase tracking-wide text-black">Global Users Grid</h1>
+        </div>
+        <span className="text-[10px] tracking-widest text-neutral-400 font-mono uppercase">Nodes Tracked: {users.length}</span>
       </div>
 
-      <Card className="p-0 overflow-hidden bg-white border border-black/5">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-neutral-50 text-[10px] uppercase tracking-widest text-neutral-400 border-b border-neutral-100 font-bold">
-                <th className="p-4">User ID</th>
-                <th className="p-4">Identity Details</th>
-                <th className="p-4">Assigned Role</th>
-                <th className="p-4">Status Token</th>
-                <th className="p-4 text-right">Access Controls</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100 text-xs">
-              {users.map((user) => (
-                <tr key={user.id} className="hover:bg-neutral-50/40 transition-colors">
-                  <td className="p-4 font-mono font-bold text-neutral-400">{user.id}</td>
-                  <td className="p-4">
-                    <div className="font-semibold uppercase tracking-wide text-black">{user.name}</div>
-                    <div className="text-neutral-400 text-[11px] font-light">{user.email}</div>
-                  </td>
-                  <td className="p-4">
-                    <span className={`text-[10px] uppercase font-bold tracking-widest ${user.role === 'designer' ? 'text-[#D4AF37]' : 'text-neutral-600'}`}>
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <span className={`text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 border ${user.status === 'active' ? 'border-emerald-200 text-emerald-700 bg-emerald-50' : 'border-red-200 text-red-700 bg-red-50'}`}>
-                      {user.status}
-                    </span>
-                  </td>
-                  <td className="p-4 text-right">
-                    <button 
-                      onClick={() => toggleStatus(user.id)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 border text-[10px] uppercase font-bold tracking-wider cursor-pointer transition-all ${user.status === 'active' ? 'border-red-200 text-red-600 hover:bg-red-50' : 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'}`}
-                    >
-                      {user.status === 'active' ? <ShieldAlert size={12} /> : <UserCheck size={12} />}
-                      {user.status === 'active' ? 'Suspend Access' : 'Restore Access'}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+      <div className="space-y-4">
+        {users.map((user) => (
+          <Card key={user.uid} className="bg-white p-6 border border-neutral-200/60 rounded-none shadow-none grid grid-cols-1 lg:grid-cols-12 gap-4 items-center luxury-hover">
+            <div className="lg:col-span-3 space-y-0.5">
+              <span className="text-[9px] font-mono text-neutral-400 block">{user.uid}</span>
+              <h4 className="text-sm font-luxury uppercase text-black tracking-wider flex items-center gap-1.5">
+                <User size={12} className="text-neutral-400" /> {user.name}
+              </h4>
+            </div>
+
+            <div className="lg:col-span-3 text-xs font-mono text-neutral-600 flex items-center gap-1.5 truncate">
+              <Mail size={12} className="text-neutral-400" />
+              <span>{user.email}</span>
+            </div>
+
+            <div className="lg:col-span-3 text-xs font-mono space-y-0.5">
+              <div className="text-neutral-400">Layer Security Classification:</div>
+              <div>
+                <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 border ${
+                  user.role === 'admin' ? 'bg-neutral-950 text-white border-black' :
+                  user.role === 'designer' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                  'bg-blue-50 text-blue-700 border-blue-200'
+                }`}>
+                  {user.role}
+                </span>
+              </div>
+            </div>
+
+            <div className="lg:col-span-3 flex items-center justify-between lg:justify-end gap-4 border-t lg:border-t-0 pt-4 lg:pt-0 border-neutral-100">
+              <span className={`text-[9px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 border ${
+                user.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-rose-50 text-rose-700 border-rose-100'
+              }`}>
+                {user.status}
+              </span>
+
+              {user.role !== 'admin' && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className={`font-mono border-neutral-200 ${user.status === 'active' ? 'text-rose-700 hover:bg-rose-700 hover:text-white' : 'text-emerald-700 hover:bg-emerald-700 hover:text-white'}`}
+                  onClick={() => toggleSuspend(user.uid)}
+                >
+                  {user.status === 'active' ? 'Suspend Node' : 'Activate Node'}
+                </Button>
+              )}
+            </div>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 };

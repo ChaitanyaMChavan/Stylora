@@ -1,95 +1,111 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/Button';
-import { useAuth } from '../../context/AuthContext';
-import { api } from '../../services/api';
-import { LogIn, ShieldAlert } from 'lucide-react';
+import { Shield, ShieldAlert, KeyRound, Mail, ArrowUpRight } from 'lucide-react';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
-  
+  const { loginUser } = useAuth();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmission = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setErrorMsg(null);
     setIsSubmitting(true);
 
-    try {
-      // Direct integration call matching your standard schema spec
-      const response = await api.post('/auth/login', { email, password });
-      
-      if (response.data.success) {
-        const { token, user } = response.data;
-        login(token, user);
+    const targetAction = await loginUser(email, password);
 
-        // Intelligently vector the user to their unique premium panel role matrix
-        if (user.role === 'admin') navigate('/admin/dashboard');
-        else if (user.role === 'designer') navigate('/designer/dashboard');
-        else navigate('/client/dashboard');
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Access denied. Please check your structural credentials.');
-    } finally {
+    if (targetAction.success) {
+      // Redirect directly to the correct workflow dashboard role mapping framework
+      if (targetAction.role === 'admin') navigate('/admin');
+      else if (targetAction.role === 'designer') navigate('/designer');
+      else navigate('/client');
+    } else {
+      setErrorMsg(targetAction.error || 'Authentication transmission failed');
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 animate-fade-in">
-      <Card className="w-full max-w-md bg-white p-8 space-y-6 border border-black/5 luxury-hover">
-        <div className="text-center space-y-1">
-          <h1 className="text-2xl font-luxury uppercase tracking-widest text-black">Sign In</h1>
-          <p className="text-[10px] tracking-widest text-neutral-400 uppercase">Access your private workspace environment</p>
+    <div className="min-h-[75vh] flex items-center justify-center py-6 animate-fade-in">
+      <Card className="w-full max-w-md bg-white p-8 border border-neutral-200/60 rounded-none shadow-none space-y-6">
+        
+        {/* Visual Brand Identity Row */}
+        <div className="text-center space-y-2">
+          <div className="inline-flex p-3 bg-neutral-950 text-white border border-black rounded-none mb-1">
+            <Shield size={20} className="text-[#D4AF37]" />
+          </div>
+          <h1 className="text-2xl font-luxury uppercase tracking-wider text-black">Atelier Credentials</h1>
+          <p className="text-xs text-neutral-400 font-mono">Input secure entry signature matrix</p>
         </div>
 
-        {error && (
-          <div className="p-3 bg-red-50 text-red-600 text-[11px] uppercase tracking-wider font-semibold border border-red-100 flex items-center gap-2">
-            <ShieldAlert size={14} className="shrink-0" /> {error}
+        {/* Display System Error Alert Messages */}
+        {errorMsg && (
+          <div className="p-3 bg-rose-50 border border-rose-100 text-rose-700 text-xs font-mono flex items-center gap-2">
+            <ShieldAlert size={14} className="shrink-0" />
+            <span>{errorMsg}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-[10px] tracking-widest uppercase text-neutral-500 font-medium mb-1">Digital Mail (Email)</label>
+        {/* Form Interactive Processing Engine */}
+        <form onSubmit={handleFormSubmission} className="space-y-5">
+          <div className="space-y-1">
+            <label className="block text-[9px] tracking-widest uppercase text-neutral-400 font-bold flex items-center gap-1">
+              <Mail size={10} /> Account Identity Address
+            </label>
             <input 
               type="email" 
-              required
-              className="w-full border border-neutral-200 px-3 py-2.5 text-xs focus:outline-none focus:border-black transition-colors"
+              required 
+              className="w-full border border-neutral-200 p-3 text-xs focus:outline-none focus:border-black bg-neutral-50/30 rounded-none font-mono"
               placeholder="name@example.com"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isSubmitting}
             />
           </div>
 
-          <div>
-            <label className="block text-[10px] tracking-widest uppercase text-neutral-500 font-medium mb-1">Passphrase</label>
+          <div className="space-y-1">
+            <label className="block text-[9px] tracking-widest uppercase text-neutral-400 font-bold flex items-center gap-1">
+              <KeyRound size={10} /> Access Keyphrase
+            </label>
             <input 
               type="password" 
-              required
-              className="w-full border border-neutral-200 px-3 py-2.5 text-xs focus:outline-none focus:border-black transition-colors"
-              placeholder="••••••••"
+              required 
+              className="w-full border border-neutral-200 p-3 text-xs focus:outline-none focus:border-black bg-neutral-50/30 rounded-none font-mono"
+              placeholder="••••••••••••"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={isSubmitting}
             />
           </div>
 
-          <Button type="submit" variant="primary" fullWidth size="md" className="mt-2" disabled={isSubmitting}>
-            <LogIn size={12} className="mr-1.5" /> {isSubmitting ? 'Verifying Verification Key...' : 'Authorize Entrance'}
+          <Button 
+            type="submit" 
+            variant="primary" 
+            fullWidth 
+            disabled={isSubmitting}
+            className="pt-3.5 pb-3.5"
+          >
+            {isSubmitting ? 'Verifying Gateway...' : 'Authorize Signature'}
           </Button>
         </form>
 
-        <div className="text-center text-xs text-neutral-400 font-light pt-2">
-          New to the house?{' '}
-          <Link to="/register" className="text-black font-semibold uppercase tracking-wider underline underline-offset-4">
-            Create Profile Registry
-          </Link>
+        {/* Alternate Navigation Redirect Node */}
+        <div className="border-t border-neutral-100 pt-4 text-center">
+          <p className="text-[11px] font-mono text-neutral-400">
+            Unregistered Identity signature?{' '}
+            <Link to="/register" className="text-black font-bold hover:underline inline-flex items-center gap-0.5">
+              Create Account <ArrowUpRight size={10} />
+            </Link>
+          </p>
         </div>
+
       </Card>
     </div>
   );

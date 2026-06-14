@@ -1,111 +1,109 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/Button';
-import { LayoutDashboard, Calendar, Image, Check, X } from 'lucide-react';
+import { Sparkles, Calendar, MapPin, Clock, Check, X, ShieldCheck } from 'lucide-react';
 
 export const DesignerDashboard: React.FC = () => {
-  const navigate = useNavigate();
-
-  const [recentRequests, setRecentRequests] = useState([
-    { id: 'APT-104', client: 'John Doe', date: '2026-06-20', time: '11:00 AM', type: 'Consultation', notes: 'Looking for living room redesign' }
+  // Local state managing interactive client booking approvals
+  const [incomingCommissions, setIncomingCommissions] = useState([
+    { id: 'APT-8492', clientName: 'Chaitanya Chavan', date: '2026-07-14', time: '10:00 AM', service: 'Spatial Consultation', location: 'Penthouse Suite B, Koregaon Park', notes: 'Needs a complete mid-century restructuring with a focus on geometric lighting layout changes.', status: 'pending' },
+    { id: 'APT-9102', clientName: 'Ananya Sharma', date: '2026-07-28', time: '02:30 PM', service: 'Spatial Auditing', location: 'Commercial Studio Annex', notes: 'Wants an executive showroom structural overview audit.', status: 'pending' }
   ]);
 
-  const handleAction = (id: string, decision: 'accepted' | 'rejected') => {
-    setRecentRequests(prev => prev.filter(req => req.id !== id));
+  const updateStatus = (id: string, nextStatus: 'accepted' | 'declined') => {
+    setIncomingCommissions(prev => 
+      prev.map(item => item.id === id ? { ...item, status: nextStatus } : item)
+    );
   };
 
   return (
-    <div className="space-y-10 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-luxury text-black uppercase tracking-wide">Studio Engine</h1>
-        <p className="text-[10px] tracking-widest text-neutral-400 uppercase mt-0.5">Manage your elite design house operations</p>
+    <div className="space-y-10 py-2 animate-fade-in">
+      {/* Editorial Dashboard Banner */}
+      <div className="border-b border-black/5 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-1.5 text-[9px] uppercase tracking-widest text-[#D4AF37] font-bold">
+            <Sparkles size={10} /> Studio Engine Core // Secure Entry
+          </div>
+          <h1 className="text-3xl font-luxury uppercase tracking-wide text-black">Atelier Operational Hub</h1>
+          <p className="text-xs text-neutral-400 font-mono font-light">Evaluate requested design metrics and manage system access channels.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[9px] uppercase font-mono tracking-widest text-emerald-700 bg-emerald-50 px-2.5 py-1 border border-emerald-100 font-bold">
+            Status: Accepting Commissions
+          </span>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-white p-6 flex items-center justify-between group">
-          <div className="space-y-1">
-            <span className="text-[10px] tracking-widest text-neutral-400 uppercase block font-medium">Active Bookings</span>
-            <span className="text-3xl font-luxury font-light text-black block">4</span>
-          </div>
-          <div className="p-3 border border-neutral-100 group-hover:border-black/10">
-            <Calendar size={16} className="text-[#D4AF37]" />
-          </div>
+      {/* Operations Performance Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <Card className="bg-white p-6 border border-neutral-200/60 rounded-none shadow-none">
+          <span className="text-[9px] tracking-widest text-neutral-400 uppercase font-bold block">Pending Proposals</span>
+          <span className="text-4xl font-luxury text-black block pt-2">
+            {incomingCommissions.filter(c => c.status === 'pending').length}
+          </span>
         </Card>
-
-        <Card className="bg-white p-6 flex items-center justify-between group">
-          <div className="space-y-1">
-            <span className="text-[10px] tracking-widest text-neutral-400 uppercase block font-medium">Lookbook Items</span>
-            <span className="text-3xl font-luxury font-light text-black block">12</span>
-          </div>
-          <div className="p-3 border border-neutral-100 group-hover:border-black/10">
-            <Image size={16} className="text-black" />
-          </div>
+        <Card className="bg-white p-6 border border-neutral-200/60 rounded-none shadow-none">
+          <span className="text-[9px] tracking-widest text-neutral-400 uppercase font-bold block">Active Active Commissions</span>
+          <span className="text-4xl font-luxury text-black block pt-2">
+            {incomingCommissions.filter(c => c.status === 'accepted').length + 4}
+          </span>
         </Card>
-
-        <Card className="bg-white p-6 flex items-center justify-between group">
-          <div className="space-y-1">
-            <span className="text-[10px] tracking-widest text-neutral-400 uppercase block font-medium">Studio Rating</span>
-            <span className="text-3xl font-luxury font-light text-black block">5.0</span>
-          </div>
-          <div className="p-3 border border-neutral-100 group-hover:border-black/10">
-            <LayoutDashboard size={16} className="text-[#D4AF37]" />
-          </div>
+        <Card className="bg-neutral-950 border border-black p-6 text-white flex flex-col justify-between rounded-none shadow-none">
+          <span className="text-[9px] tracking-widest text-[#D4AF37] uppercase font-bold block">Network Authority Check</span>
+          <span className="text-xs text-neutral-400 font-mono font-light pt-1">All architecture metrics comply with platform verification standard v2.4.</span>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        <div className="lg:col-span-2 space-y-4">
-          <div className="border-b border-neutral-100 pb-3">
-            <h3 className="text-xs uppercase tracking-widest font-bold text-black">Incoming Consultation Requests</h3>
-          </div>
+      {/* Live Booking Management Panel */}
+      <div className="space-y-4">
+        <h3 className="text-xs uppercase tracking-widest font-bold text-black border-b border-neutral-100 pb-2">
+          Incoming Spatial Brief Streams
+        </h3>
 
-          {recentRequests.length > 0 ? (
-            recentRequests.map((req) => (
-              <div key={req.id} className="border border-black/5 bg-white p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <span className="text-[9px] tracking-widest text-[#D4AF37] uppercase block font-bold">{req.id} • {req.type}</span>
-                  <h4 className="text-sm font-semibold uppercase text-black tracking-wide">{req.client}</h4>
-                  <p className="text-xs text-neutral-500 font-light">{req.date} @ {req.time}</p>
-                  <p className="text-[11px] text-neutral-400 font-light italic mt-1">"{req.notes}"</p>
+        <div className="space-y-4">
+          {incomingCommissions.map((comm) => (
+            <Card key={comm.id} className="bg-white p-6 border border-neutral-200/60 rounded-none shadow-none luxury-hover space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 border-b border-neutral-100 pb-3">
+                <div className="space-y-0.5">
+                  <span className="text-[9px] font-mono text-neutral-400 block">{comm.id}</span>
+                  <h4 className="text-base font-luxury uppercase tracking-wider text-black">{comm.clientName}</h4>
+                  <span className="text-[10px] text-neutral-400 font-mono uppercase">{comm.service}</span>
                 </div>
-
-                <div className="flex items-center gap-2">
-                  <button 
-                    onClick={() => handleAction(req.id, 'accepted')}
-                    className="p-2.5 border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-all cursor-pointer"
-                    title="Accept Window"
-                  >
-                    <Check size={14} />
-                  </button>
-                  <button 
-                    onClick={() => handleAction(req.id, 'rejected')}
-                    className="p-2.5 border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all cursor-pointer"
-                    title="Decline Request"
-                  >
-                    <X size={14} />
-                  </button>
+                <div>
+                  <span className={`text-[9px] font-mono font-bold uppercase tracking-widest px-3 py-1 border ${
+                    comm.status === 'accepted' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                    comm.status === 'declined' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                    'bg-amber-50 text-amber-700 border-amber-200'
+                  }`}>
+                    {comm.status}
+                  </span>
                 </div>
               </div>
-            ))
-          ) : (
-            <div className="text-center py-8 text-xs text-neutral-400 uppercase tracking-widest bg-white border border-dashed border-neutral-200">
-              No pending requests in stream
-            </div>
-          )}
-        </div>
 
-        <aside className="border border-black/5 bg-white p-6 space-y-4">
-          <h3 className="text-xs uppercase tracking-widest font-bold text-black border-b border-neutral-100 pb-2">Studio Shortcuts</h3>
-          <div className="flex flex-col gap-2">
-            <Button variant="outline" size="sm" fullWidth className="justify-start text-left" onClick={() => navigate('/designer/portfolio')}>
-              Manage Lookbooks
-            </Button>
-            <Button variant="outline" size="sm" fullWidth className="justify-start text-left" onClick={() => navigate('/designer/profile')}>
-              Update Studio Identity
-            </Button>
-          </div>
-        </aside>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono text-neutral-600">
+                <div className="flex items-center gap-2"><Calendar size={13} className="text-black" /> {comm.date}</div>
+                <div className="flex items-center gap-2"><Clock size={13} className="text-neutral-400" /> {comm.time}</div>
+                <div className="flex items-center gap-2 truncate"><MapPin size={13} className="text-[#D4AF37]" /> {comm.location}</div>
+              </div>
+
+              <div className="bg-neutral-50 p-4 border border-neutral-100 rounded-none">
+                <span className="block text-[9px] uppercase tracking-widest font-bold text-neutral-400 mb-1">Client Design Intent Statement</span>
+                <p className="text-xs text-neutral-600 font-light font-mono leading-relaxed">"{comm.notes}"</p>
+              </div>
+
+              {comm.status === 'pending' && (
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="outline" size="sm" className="border-rose-200 text-rose-700 hover:bg-rose-700 hover:text-white" onClick={() => updateStatus(comm.id, 'declined')}>
+                    <X size={12} className="mr-1" /> Decline Proposal
+                  </Button>
+                  <Button variant="primary" size="sm" onClick={() => updateStatus(comm.id, 'accepted')}>
+                    <Check size={12} className="mr-1" /> Authorize Commission
+                  </Button>
+                </div>
+              )}
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   );
