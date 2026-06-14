@@ -175,10 +175,32 @@ const deleteDesignerProfile = async (req, res, next) => {
   }
 };
 
+/**
+ * Get All Designer Profiles (For House Roster / Client Discovery)
+ * GET /api/designers
+ * Access: Public / Authenticated Clients & Designers
+ */
+const getAllDesigners = async (req, res, next) => {
+  try {
+    // Fetches all profiles and pulls in the linked user's name, email, and role
+    const designers = await DesignerProfile.find({})
+      .populate("userId", "name email role");
+
+    return res.status(200).json({
+      success: true,
+      count: designers.length,
+      designers,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createDesignerProfile,
   getMyProfile,
   getDesignerProfileById,
   updateDesignerProfile,
   deleteDesignerProfile,
+  getAllDesigners,
 };

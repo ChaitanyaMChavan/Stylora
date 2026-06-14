@@ -1,110 +1,251 @@
-import React, { useState } from 'react';
-import { Card } from '../../components/ui/card';
-import { Button } from '../../components/ui/Button';
-import { Sparkles, Calendar, MapPin, Clock, Check, X, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useAuth } from '../../context/AuthContext';
+import { Calendar, User, Clock, CheckCircle2, XCircle, Loader2, AlertCircle, Inbox } from 'lucide-react';
+
+interface AppointmentData {
+  _id: string;
+  clientId: {
+    name: string;
+    email: string;
+  } | null | any;
+  appointmentDate: string;
+  appointmentTime: string;
+  serviceType: string;
+  notes?: string;
+  contactPhone?: string;
+  location: string;
+  status: string;
+}
 
 export const DesignerDashboard: React.FC = () => {
-  // Local state managing interactive client booking approvals
-  const [incomingCommissions, setIncomingCommissions] = useState([
-    { id: 'APT-8492', clientName: 'Chaitanya Chavan', date: '2026-07-14', time: '10:00 AM', service: 'Spatial Consultation', location: 'Penthouse Suite B, Koregaon Park', notes: 'Needs a complete mid-century restructuring with a focus on geometric lighting layout changes.', status: 'pending' },
-    { id: 'APT-9102', clientName: 'Ananya Sharma', date: '2026-07-28', time: '02:30 PM', service: 'Spatial Auditing', location: 'Commercial Studio Annex', notes: 'Wants an executive showroom structural overview audit.', status: 'pending' }
-  ]);
+  const { token, user } = useAuth();
+  const [appointments, setAppointments] = useState<AppointmentData[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
-  const updateStatus = (id: string, nextStatus: 'accepted' | 'declined') => {
-    setIncomingCommissions(prev => 
-      prev.map(item => item.id === id ? { ...item, status: nextStatus } : item)
-    );
+  const designerName = user?.name || "STUDIO ARCHITECT";
+
+  const fetchDesignerMatrix = async () => {
+    try {
+      setLoading(true);
+      const activeToken = token || localStorage.getItem('stylora_auth_token');
+      
+      // Exact match with your backend router definition: GET /api/appointments/designer
+      const response = await axios.get('http://localhost:5000/api/appointments/designer', {
+        headers: { Authorization: `Bearer ${activeToken}` }
+      });
+
+      if (response.data.success) {
+        setAppointments(response.data.appointments || []);
+      } else {
+        setError('Failed to extract active studio booking records.');
+      }
+    } catch (err: any) {
+      console.error('Error fetching designer studio arrays:', err);
+      setError(err.response?.data?.message || 'Unable to sync with incoming project request pipelines.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDesignerMatrix();
+  }, [token]);
+
+  // Handle status actions mapping cleanly to your custom /:id/accept or /:id/reject routes
+  const handleUpdateStatus = async (appointmentId: string, action: 'accept' | 'reject') => {
+    const confirmAction = window.confirm(`Confirm action to ${action.toUpperCase()} this booking request?`);
+    if (!confirmAction) return;
+
+    try {
+      setProcessingId(appointmentId);
+      const activeToken = token || localStorage.getItem('stylora_auth_token');
+
+      // Exact match with your backend endpoints: PUT /api/appointments/:id/accept or /api/appointments/:id/reject
+      const response = await axios.put(
+        `http://localhost:5000/api/appointments/${appointmentId}/${action}`,
+        {}, // Body payload can remain empty as parameter parameters handle query targets
+        { headers: { Authorization: `Bearer ${activeToken}` } }
+      );
+
+      if (response.data.success) {
+        // Update state locally based on what action was fired
+        const targetedStatus = action === 'accept' ? 'accepted' : 'rejected';
+        setAppointments(prev =>
+          prev.map(apt => apt._id === appointmentId ? { ...apt, status: targetedStatus } : apt)
+        );
+      }
+    } catch (err: any) {
+      console.error(`Error executing ${action} routine:`, err);
+      alert(err.response?.data?.message || `Could not successfully execute the booking state transformation.`);
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const pendingRequests = appointments.filter(a => a.status.toLowerCase() === 'pending').length;
+  const activeCommissions = appointments.filter(a => a.status.toLowerCase() === 'accepted' || a.status.toLowerCase() === 'confirmed').length;
+
+  const formatDisplayDate = (dateString: string) => {
+    try {
+      const dateObj = new Date(dateString);
+      if (isNaN(dateObj.getTime())) return "TBD";
+      return dateObj.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    } catch {
+      return "TBD";
+    }
   };
 
   return (
-    <div className="space-y-10 py-2 animate-fade-in">
-      {/* Editorial Dashboard Banner */}
-      <div className="border-b border-black/5 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div className="space-y-1">
-          <div className="inline-flex items-center gap-1.5 text-[9px] uppercase tracking-widest text-[#D4AF37] font-bold">
-            <Sparkles size={10} /> Studio Engine Core // Secure Entry
+    <div className="p-8 bg-[#FAFAFA] min-h-screen animate-fade-in">
+      <div className="mb-12 border-b border-neutral-200/60 pb-6">
+        <div className="flex items-center gap-1.5 text-[10px] font-mono tracking-widest text-[#D4AF37] uppercase mb-1 font-bold">
+          <span>✦</span>
+          <span>Studio Workspace Terminal // Authorized Access</span>
+        </div>
+        <h1 className="text-3xl font-luxury uppercase tracking-wider text-black">
+          {designerName} Overview
+        </h1>
+        <p className="text-xs font-mono text-neutral-400 mt-2 tracking-wide">
+          Manage inbound design requests, scope specifications, and client consultation queues.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        <div className="bg-white border border-neutral-200/60 p-6 flex flex-col justify-between h-32">
+          <span className="text-[10px] font-mono tracking-widest uppercase text-neutral-400">
+            Inbound Review Queue
+          </span>
+          <div className="flex items-baseline gap-2">
+            <span className="text-4xl font-luxury tracking-wider text-black">
+              {String(pendingRequests).padStart(2, '0')}
+            </span>
+            <span className="text-[9px] font-mono text-amber-500 tracking-wider uppercase font-bold">
+              Pending Validation
+            </span>
           </div>
-          <h1 className="text-3xl font-luxury uppercase tracking-wide text-black">Atelier Operational Hub</h1>
-          <p className="text-xs text-neutral-400 font-mono font-light">Evaluate requested design metrics and manage system access channels.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[9px] uppercase font-mono tracking-widest text-emerald-700 bg-emerald-50 px-2.5 py-1 border border-emerald-100 font-bold">
-            Status: Accepting Commissions
+
+        <div className="bg-white border border-neutral-200/60 p-6 flex flex-col justify-between h-32">
+          <span className="text-[10px] font-mono tracking-widest uppercase text-neutral-400">
+            Active Spatial Commissions
           </span>
+          <div className="flex items-baseline gap-2">
+            <span className="text-4xl font-luxury tracking-wider text-black">
+              {String(activeCommissions).padStart(2, '0')}
+            </span>
+            <span className="text-[9px] font-mono text-emerald-600 tracking-wider uppercase font-bold">
+              Cleared Rooms
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Operations Performance Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <Card className="bg-white p-6 border border-neutral-200/60 rounded-none shadow-none">
-          <span className="text-[9px] tracking-widest text-neutral-400 uppercase font-bold block">Pending Proposals</span>
-          <span className="text-4xl font-luxury text-black block pt-2">
-            {incomingCommissions.filter(c => c.status === 'pending').length}
-          </span>
-        </Card>
-        <Card className="bg-white p-6 border border-neutral-200/60 rounded-none shadow-none">
-          <span className="text-[9px] tracking-widest text-neutral-400 uppercase font-bold block">Active Active Commissions</span>
-          <span className="text-4xl font-luxury text-black block pt-2">
-            {incomingCommissions.filter(c => c.status === 'accepted').length + 4}
-          </span>
-        </Card>
-        <Card className="bg-neutral-950 border border-black p-6 text-white flex flex-col justify-between rounded-none shadow-none">
-          <span className="text-[9px] tracking-widest text-[#D4AF37] uppercase font-bold block">Network Authority Check</span>
-          <span className="text-xs text-neutral-400 font-mono font-light pt-1">All architecture metrics comply with platform verification standard v2.4.</span>
-        </Card>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-sm font-luxury uppercase tracking-widest text-black font-bold">
+          Inbound Project Matrix Ledger
+        </h2>
+        <span className="text-[9px] font-mono text-neutral-400 tracking-widest uppercase">
+          Live Operational Stream
+        </span>
       </div>
 
-      {/* Live Booking Management Panel */}
-      <div className="space-y-4">
-        <h3 className="text-xs uppercase tracking-widest font-bold text-black border-b border-neutral-100 pb-2">
-          Incoming Spatial Brief Streams
-        </h3>
-
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-3 text-neutral-400 font-mono text-[11px] tracking-widest bg-white border border-neutral-200/60">
+          <Loader2 className="animate-spin text-[#D4AF37]" size={20} />
+          <span>SYNCHRONIZING ATELIER COMMAND LINES...</span>
+        </div>
+      ) : error ? (
+        <div className="border border-rose-200 bg-rose-50/40 p-6 text-center rounded-none font-mono text-xs text-rose-900 tracking-wide flex items-center justify-center gap-2">
+          <AlertCircle size={14} className="text-rose-600" />
+          <span>{error}</span>
+        </div>
+      ) : appointments.length === 0 ? (
+        <div className="border border-neutral-200 bg-white p-16 text-center rounded-none font-mono text-xs tracking-widest text-neutral-400 max-w-2xl mx-auto flex flex-col items-center gap-2">
+          <Inbox size={24} className="text-neutral-300" />
+          <span>NO APPOINTMENT TRANSMISSIONS COMMITTED TO THIS ATELIER ID.</span>
+        </div>
+      ) : (
         <div className="space-y-4">
-          {incomingCommissions.map((comm) => (
-            <Card key={comm.id} className="bg-white p-6 border border-neutral-200/60 rounded-none shadow-none luxury-hover space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 border-b border-neutral-100 pb-3">
-                <div className="space-y-0.5">
-                  <span className="text-[9px] font-mono text-neutral-400 block">{comm.id}</span>
-                  <h4 className="text-base font-luxury uppercase tracking-wider text-black">{comm.clientName}</h4>
-                  <span className="text-[10px] text-neutral-400 font-mono uppercase">{comm.service}</span>
+          {appointments.map((apt) => {
+            const clientDisplayName = apt.clientId && typeof apt.clientId === 'object'
+              ? apt.clientId.name
+              : 'Registered Client';
+              
+            const isPending = apt.status.toLowerCase() === 'pending';
+
+            return (
+              <div 
+                key={apt._id} 
+                className={`bg-white border p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6 transition-all ${
+                  apt.status.toLowerCase() === 'cancelled' || apt.status.toLowerCase() === 'rejected' ? 'border-neutral-200/40 opacity-50' : 'border-neutral-200/80 hover:border-neutral-400'
+                }`}
+              >
+                <div className="space-y-2">
+                  <span className="text-[9px] font-mono text-neutral-400 tracking-wider uppercase block">
+                    REF ID: {apt._id.slice(-6).toUpperCase()}
+                  </span>
+                  <h3 className="text-base font-luxury uppercase tracking-wider text-black">
+                    Scope: {apt.serviceType || 'Spatial Blueprint Architecture'}
+                  </h3>
+                  <div className="flex items-center gap-1.5 text-xs text-neutral-500">
+                    <User size={12} className="text-neutral-400" />
+                    <span className="font-mono text-[11px]">Client: <span className="text-black font-bold uppercase">{clientDisplayName}</span></span>
+                  </div>
                 </div>
-                <div>
-                  <span className={`text-[9px] font-mono font-bold uppercase tracking-widest px-3 py-1 border ${
-                    comm.status === 'accepted' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                    comm.status === 'declined' ? 'bg-rose-50 text-rose-700 border-rose-200' :
-                    'bg-amber-50 text-amber-700 border-amber-200'
-                  }`}>
-                    {comm.status}
+
+                <div className="grid grid-cols-2 gap-x-6 gap-y-1 font-mono text-[11px] text-neutral-500 min-w-[240px]">
+                  <div className="flex items-center gap-1.5">
+                    <Calendar size={12} className="text-neutral-400" />
+                    <span>{formatDisplayDate(apt.appointmentDate)}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Clock size={12} className="text-neutral-400" />
+                    <span>{apt.appointmentTime || 'TBD'}</span>
+                  </div>
+                  <span className="col-span-2 text-[10px] text-neutral-400 italic mt-1 truncate max-w-xs">
+                    Notes: "{apt.notes || 'No special conditions logged.'}"
                   </span>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono text-neutral-600">
-                <div className="flex items-center gap-2"><Calendar size={13} className="text-black" /> {comm.date}</div>
-                <div className="flex items-center gap-2"><Clock size={13} className="text-neutral-400" /> {comm.time}</div>
-                <div className="flex items-center gap-2 truncate"><MapPin size={13} className="text-[#D4AF37]" /> {comm.location}</div>
-              </div>
-
-              <div className="bg-neutral-50 p-4 border border-neutral-100 rounded-none">
-                <span className="block text-[9px] uppercase tracking-widest font-bold text-neutral-400 mb-1">Client Design Intent Statement</span>
-                <p className="text-xs text-neutral-600 font-light font-mono leading-relaxed">"{comm.notes}"</p>
-              </div>
-
-              {comm.status === 'pending' && (
-                <div className="flex justify-end gap-2 pt-2">
-                  <Button variant="outline" size="sm" className="border-rose-200 text-rose-700 hover:bg-rose-700 hover:text-white" onClick={() => updateStatus(comm.id, 'declined')}>
-                    <X size={12} className="mr-1" /> Decline Proposal
-                  </Button>
-                  <Button variant="primary" size="sm" onClick={() => updateStatus(comm.id, 'accepted')}>
-                    <Check size={12} className="mr-1" /> Authorize Commission
-                  </Button>
+                <div className="flex items-center gap-3 justify-end min-w-[180px]">
+                  {isPending ? (
+                    <div className="flex items-center gap-2 w-full lg:w-auto">
+                      <button
+                        disabled={processingId === apt._id}
+                        onClick={() => handleUpdateStatus(apt._id, 'accept')}
+                        className="flex-1 lg:flex-initial bg-black text-white hover:bg-neutral-900 text-[10px] font-mono tracking-widest uppercase px-3 py-2 flex items-center gap-1 transition-all"
+                      >
+                        <CheckCircle2 size={12} className="text-[#D4AF37]" />
+                        <span>Accept</span>
+                      </button>
+                      <button
+                        disabled={processingId === apt._id}
+                        onClick={() => handleUpdateStatus(apt._id, 'reject')}
+                        className="flex-1 lg:flex-initial border border-neutral-200 hover:border-rose-600 hover:text-rose-600 text-[10px] font-mono tracking-widest uppercase px-3 py-2 flex items-center gap-1 transition-all"
+                      >
+                        <XCircle size={12} />
+                        <span>Reject</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <span className={`inline-block px-3 py-1 text-[9px] font-mono font-bold tracking-widest uppercase border ${
+                      apt.status.toLowerCase() === 'accepted' || apt.status.toLowerCase() === 'confirmed' ? 'bg-emerald-50/60 border-emerald-200 text-emerald-600' :
+                      apt.status.toLowerCase() === 'cancelled' || apt.status.toLowerCase() === 'rejected' ? 'bg-rose-50/60 border-rose-200 text-rose-600' :
+                      'bg-neutral-50 border-neutral-200 text-neutral-500'
+                    }`}>
+                      {apt.status}
+                    </span>
+                  )}
                 </div>
-              )}
-            </Card>
-          ))}
+
+              </div>
+            );
+          })}
         </div>
-      </div>
+      )}
     </div>
   );
 };

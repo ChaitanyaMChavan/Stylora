@@ -6,12 +6,15 @@ const {
   getDesignerProfileById,
   updateDesignerProfile,
   deleteDesignerProfile,
+  getAllDesigners,
 } = require("../controllers/designerController");
 
 const { protect } = require("../middleware/authMiddleware");
 const { authorize } = require("../middleware/roleMiddleware");
 
 const router = express.Router();
+
+router.route("/").get(getAllDesigners);
 
 /**
  * Create Designer Profile

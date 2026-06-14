@@ -1,134 +1,148 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card } from '../../components/ui/card';
-import { Button } from '../../components/ui/Button';
-import { MapPin, Sparkles, SlidersHorizontal } from 'lucide-react';
+import axios from 'axios';
+import { SlidersHorizontal, Loader2, MapPin, Briefcase } from 'lucide-react';
 
-interface DesignerProfile {
+// Define the shape matching your backend mongoose schemas
+interface DesignerProfileData {
   _id: string;
-  name: string;
-  style: string;
+  userId: {
+    _id: string;
+    name: string;
+    email: string;
+    role: string;
+  } | null;
+  bio: string;
   location: string;
-  specialization: string;
+  style: string;
   experience: number;
-  image: string;
+  specialization: string;
+  profileImage?: string;
+  isAvailable: boolean;
 }
 
 export const Designers: React.FC = () => {
   const navigate = useNavigate();
-  const [isAuthed, setIsAuthed] = useState<boolean>(false);
-
-  // Premium Static Curated Data
-  const staticDesigners: DesignerProfile[] = [
-    {
-      _id: "static-1",
-      name: "Atelier Maurice",
-      style: "Mid-Century Modern",
-      location: "Paris, France",
-      specialization: "Residential Penthouses & Lofts",
-      experience: 8,
-      image: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=600&q=80"
-    },
-    {
-      _id: "static-2",
-      name: "Linear Perspective Labs",
-      style: "Industrial Minimalist",
-      location: "Berlin, Germany",
-      specialization: "Commercial Showrooms & Studios",
-      experience: 6,
-      image: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=600&q=80"
-    },
-    {
-      _id: "static-3",
-      name: "Vanguard Structural",
-      style: "Brutalist Contemporary",
-      location: "Tokyo, Japan",
-      specialization: "Luxury Concrete Villas",
-      experience: 12,
-      image: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=600&q=80"
-    }
-  ];
+  const [designers, setDesigners] = useState<DesignerProfileData[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if user session token is present
-    const sessionToken = localStorage.getItem('stylora_auth_token');
-    if (sessionToken) {
-      setIsAuthed(true);
-    }
+    const fetchLiveDesigners = async () => {
+      try {
+        setLoading(true);
+        // Connect stream to the live backend controller endpoint we just opened
+        const response = await axios.get('http://localhost:5000/api/designers');
+        
+        if (response.data.success) {
+          setDesigners(response.data.designers);
+        } else {
+          setError('Failed to load active catalog ledger stream.');
+        }
+      } catch (err: any) {
+        console.error('Error fetching dynamic database elements:', err);
+        setError(err.response?.data?.message || 'Unable to establish channel stream with the designer ledger.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLiveDesigners();
   }, []);
 
-  const handleActionClick = (designerId: string) => {
-    if (!isAuthed) {
-      // Bounces anonymous guests straight to secure authentication gateway
-      navigate('/login');
-    } else {
-      // If logged in, routes to the dedicated view page
-      navigate(`/designer/${designerId}`);
-    }
-  };
-
   return (
-    <div className="space-y-12 py-4 animate-fade-in px-4 max-w-7xl mx-auto">
-      {/* Editorial Row Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-black/5 pb-6">
-        <div className="space-y-1">
-          <span className="text-[10px] tracking-widest text-[#D4AF37] uppercase font-bold">
-            {isAuthed ? "Secure Gateway Indexes" : "Public Guest Exhibition"}
+    <div className="min-h-screen bg-[#FAFAFA] px-8 py-12 mx-auto max-w-7xl animate-fade-in">
+      {/* Editorial Header Section */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-neutral-200/60 pb-8 mb-12 gap-6">
+        <div>
+          <span className="text-[10px] font-mono tracking-widest text-[#D4AF37] uppercase font-bold block mb-2">
+            Secure Gateway Indexes
           </span>
-          <h1 className="text-4xl font-luxury text-black uppercase tracking-wide">The House Roster</h1>
-          <p className="text-xs text-neutral-400 font-light">
-            {isAuthed ? "Viewing authenticated active spatial interior architect profiles" : "Sign in to access secure studio scheduling booking mechanics"}
+          <h1 className="text-4xl font-luxury uppercase tracking-wider text-black">
+            The House Roster
+          </h1>
+          <p className="text-xs font-mono text-neutral-400 mt-2 tracking-wide">
+            Viewing authenticated active spatial interior architect profiles dynamically pulled from database.
           </p>
         </div>
-        
-        <div className="flex items-center gap-2 border border-neutral-200 px-4 py-2 text-xs uppercase tracking-widest font-mono font-medium cursor-pointer hover:border-black transition-colors bg-white">
-          <SlidersHorizontal size={12} /> Refine Matrix View
-        </div>
+
+        <button className="inline-flex items-center gap-2 border border-neutral-200 bg-white px-5 py-3 text-[10px] font-mono tracking-widest uppercase hover:bg-neutral-50 hover:border-black transition-all text-black rounded-none">
+          <SlidersHorizontal size={12} />
+          <span>Refine Matrix View</span>
+        </button>
       </div>
 
-      {/* Grid Canvas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {staticDesigners.map((designer) => (
-          <Card key={designer._id} className="p-0 overflow-hidden bg-white luxury-hover flex flex-col justify-between rounded-none shadow-none border border-neutral-200/60">
-            <div className="h-64 bg-neutral-100 relative overflow-hidden group">
-              <img 
-                src={designer.image} 
-                alt={designer.name} 
-                className="w-full h-full object-cover grayscale opacity-95 group-hover:scale-105 group-hover:grayscale-0 transition-all duration-700"
-              />
-              <div className="absolute bottom-3 left-3 bg-black text-white text-[9px] uppercase tracking-widest px-2.5 py-1 font-bold font-mono">
-                {designer.style}
+      {/* Logic Gate Rendering States */}
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-24 gap-4 text-neutral-400 font-mono text-xs tracking-widest">
+          <Loader2 className="animate-spin text-[#D4AF37]" size={28} />
+          <span>SYNCHRONIZING ATELIER DIRECTORY INDEXES...</span>
+        </div>
+      ) : error ? (
+        <div className="border border-rose-200 bg-rose-50/40 p-6 text-center max-w-xl mx-auto rounded-none">
+          <span className="text-[10px] bg-rose-950 text-white font-mono px-2 py-0.5 tracking-widest uppercase font-bold">
+            ⚠️ Pipeline Exception Logged
+          </span>
+          <p className="text-xs text-rose-900 font-mono mt-3 tracking-wide">{error}</p>
+        </div>
+      ) : designers.length === 0 ? (
+        <div className="border border-neutral-200 bg-white p-12 text-center max-w-xl mx-auto rounded-none font-mono text-xs tracking-widest text-neutral-400">
+          NO REGISTERED DESIGNER CONTROLLER INSTANCES DETECTED IN DATABASE.
+        </div>
+      ) : (
+        /* Dynamic Matrix Grid Stream */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+          {designers.map((designer) => (
+            <div 
+              key={designer._id} 
+              className="group flex flex-col bg-white border border-neutral-100 hover:border-neutral-300 transition-all p-4"
+            >
+              {/* Profile Frame Image Section */}
+              <div className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-100 mb-6">
+                <img
+                  src={designer.profileImage || 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=800&auto=format&fit=crop'}
+                  alt={designer.userId?.name || 'Designer'}
+                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out"
+                />
+                <span className="absolute bottom-3 left-3 bg-black text-white text-[9px] font-mono tracking-widest uppercase px-2 py-1 rounded-none">
+                  {designer.style || 'Signature Minimalist'}
+                </span>
               </div>
-            </div>
 
-            <div className="p-6 space-y-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-1.5 text-[9px] uppercase tracking-widest text-[#D4AF37] font-bold">
-                  <Sparkles size={10} /> {designer.experience}+ Years Active Practice
-                </div>
-                <h3 className="text-xl font-luxury uppercase tracking-wide text-black pt-0.5">{designer.name}</h3>
-                <p className="text-xs text-neutral-400 font-light italic truncate">
-                  Specializing in {designer.specialization}
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between border-t border-neutral-100 pt-4">
-                <div className="flex items-center gap-1 text-xs text-neutral-500 font-light">
-                  <MapPin size={12} className="text-black" /> {designer.location}
+              {/* Dynamic Information Block */}
+              <div className="flex flex-col flex-1">
+                <div className="flex items-center gap-1.5 text-[9px] font-mono tracking-widest text-[#D4AF37] uppercase mb-1 font-bold">
+                  <span>✦</span>
+                  <span>{designer.experience || 0}+ Years Active Practice</span>
                 </div>
                 
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => handleActionClick(designer._id)}
-                >
-                  {isAuthed ? 'Enter Atelier' : 'Sign In to View'}
-                </Button>
+                <h3 className="text-lg font-luxury uppercase tracking-wider text-black mb-2">
+                  {designer.userId?.name || 'Anonymous Studio'}
+                </h3>
+                
+                <p className="text-xs text-neutral-500 line-clamp-2 mb-6 tracking-wide font-light leading-relaxed">
+                  {designer.bio || 'No structural biography statement logged.'}
+                </p>
+
+                {/* Meta Location Row */}
+                <div className="mt-auto pt-4 border-t border-neutral-100 flex items-center justify-between text-[10px] font-mono text-neutral-400 uppercase tracking-widest">
+                  <div className="flex items-center gap-1">
+                    <MapPin size={11} className="text-neutral-300" />
+                    <span>{designer.location || 'Global Operations'}</span>
+                  </div>
+                  
+                  <button
+                    onClick={() => navigate(`/designer/${designer._id}`)}
+                    className="text-black font-bold hover:text-[#D4AF37] transition-colors border-b border-black hover:border-[#D4AF37] pb-0.5 text-[10px]"
+                  >
+                    Enter Atelier
+                  </button>
+                </div>
               </div>
             </div>
-          </Card>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
