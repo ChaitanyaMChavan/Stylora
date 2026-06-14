@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/Button';
 import { Calendar, Clock, MapPin, Sparkles, ArrowUpRight, MessageSquare } from 'lucide-react';
+import { Search, ArrowRight } from 'lucide-react'; 
 
 export const ClientDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -60,15 +61,26 @@ export const ClientDashboard: React.FC = () => {
             <span className="text-[10px] text-[#D4AF37] font-mono font-bold uppercase">Confirmed Room</span>
           </div>
         </Card>
-        <Card className="bg-neutral-950 border border-black p-6 flex flex-col justify-between text-white relative overflow-hidden">
-          <span className="text-[9px] tracking-widest text-[#D4AF37] uppercase font-bold z-10">Instant Concierge Channel</span>
-          <p className="text-xs text-neutral-400 font-light font-mono pt-2 z-10">Need system assistance?</p>
-          <div className="pt-4 z-10">
-            <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white hover:text-black w-full" onClick={() => navigate('/contact')}>
-              Open Desk <ArrowUpRight size={10} className="ml-1" />
-            </Button>
-          </div>
-        </Card>
+       <Card className="bg-white p-6 border border-neutral-200/60 rounded-none shadow-none flex flex-col justify-between luxury-hover">
+  <div className="space-y-1">
+    <span className="text-[9px] tracking-widest text-[#D4AF37] uppercase font-bold">Marketplace Engine</span>
+    <h3 className="text-sm font-luxury uppercase tracking-wider text-black">Commission New Spaces</h3>
+    <p className="text-[11px] text-neutral-400 font-mono font-light leading-relaxed">
+      Browse verified master catalogs, filter architectural styles, and request live consultations.
+    </p>
+  </div>
+  <div className="pt-4">
+    <Button 
+      variant="primary" 
+      size="sm" 
+      fullWidth 
+      className="flex items-center justify-center gap-2 font-mono text-[10px] tracking-widest uppercase text-white bg-black hover:bg-neutral-900"
+      onClick={() => navigate('/designers')}
+    >
+      <Search size={12} /> Search Roster <ArrowRight size={12} />
+    </Button>
+  </div>
+</Card>
       </div>
 
       {/* Live Appointments Action Feed Container */}

@@ -12,7 +12,7 @@ import { Designers } from '../views/public/Designers';
 import { DesignerProfile } from '../views/public/DesignerProfile';
 import { Login } from '../views/public/Login';
 import { Register } from '../views/public/Register';
-import { About } from '../views/public/about';
+import { About } from '../views/public/About';
 import { Contact } from '../views/public/Contact';
 
 // Client Dashboard Ecosystem Views
@@ -59,7 +59,7 @@ export const AppRoutes: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public Visitor Domain */}
+        {/* Public Visitor Domain Container - Managed cleanly under the dynamic PublicLayout wrapper */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/designers" element={<Designers />} />
