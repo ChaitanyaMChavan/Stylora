@@ -1,4 +1,5 @@
 const Portfolio = require("../models/Portfolio");
+const Designer = require("../models/DesignerProfile");
 
 /**
  * Create Portfolio
@@ -106,26 +107,39 @@ const getPortfolioById = async (req, res, next) => {
  * Get Portfolios Of A Designer
  * GET /api/portfolio/designer/:designerId
  */
-const getDesignerPortfolios = async (
-  req,
-  res,
-  next
-) => {
+const getDesignerPortfolios = async (req, res, next) => {
   try {
+    const { designerId } = req.params;
+
+    // 1. Safely find the designer profile using the incoming parameter ID
+    const designerProfile = await Designer.findById(designerId);
+    
+    // Safety check: Prevent crashing if the profile doesn't exist
+    if (!designerProfile) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Designer profile not found" 
+      });
+    }
+
+    // 2. Query portfolios handling both matching ID fallbacks 
+    // Checks if portfolios are tied to the User ID OR the Profile ID
     const portfolios = await Portfolio.find({
-      designerId: req.params.designerId,
-    }).sort({ createdAt: -1 });
+      $or: [
+        { designerId: designerProfile.userId },
+        { designerId: designerProfile._id }
+      ]
+    });
 
     return res.status(200).json({
       success: true,
       count: portfolios.length,
-      portfolios,
+      portfolios
     });
   } catch (error) {
-    next(error);
+    next(error); // Securely hands the error over to your global Express handler
   }
 };
-
 /**
  * Update Portfolio
  * PUT /api/portfolio/:portfolioId

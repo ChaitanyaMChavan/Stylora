@@ -1,12 +1,9 @@
 const Appointment = require("../models/Appointment");
 const Notification = require("../models/Notification");
+const DesignerProfile = require("../models/DesignerProfile");
 
-//create appointment
-const createAppointment = async (
-  req,
-  res,
-  next
-) => {
+// Create appointment
+const createAppointment = async (req, res, next) => {
   try {
     const {
       designerId,
@@ -28,99 +25,79 @@ const createAppointment = async (
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          "All required fields must be provided",
+        message: "All required fields must be provided",
       });
     }
 
     if (designerId === req.user.userId) {
       return res.status(400).json({
         success: false,
-        message:
-          "You cannot book yourself",
+        message: "You cannot book yourself",
       });
     }
 
-    const bookingDate =
-      new Date(appointmentDate);
-
+    const bookingDate = new Date(appointmentDate);
     const today = new Date();
-
     today.setHours(0, 0, 0, 0);
 
     if (bookingDate < today) {
       return res.status(400).json({
         success: false,
-        message:
-          "Appointment date must be in the future",
+        message: "Appointment date must be in the future",
       });
     }
 
-    const existingSlot =
-      await Appointment.findOne({
-        designerId,
-        appointmentDate,
-        appointmentTime,
-
-        status: {
-          $nin: [
-            "cancelled",
-            "rejected",
-          ],
-        },
-      });
+    const existingSlot = await Appointment.findOne({
+      designerId,
+      appointmentDate,
+      appointmentTime,
+      status: {
+        $nin: ["cancelled", "rejected"],
+      },
+    });
 
     if (existingSlot) {
       return res.status(409).json({
         success: false,
-        message:
-          "Designer already booked for this time slot",
+        message: "Designer already booked for this time slot",
       });
     }
 
-    const appointment =
-      await Appointment.create({
-        clientId: req.user.userId,
-        designerId,
-        appointmentDate,
-        appointmentTime,
-        serviceType,
-        notes,
-        contactPhone,
-        location,
-      });
+    const appointment = await Appointment.create({
+      clientId: req.user.userId,
+      designerId,
+      appointmentDate,
+      appointmentTime,
+      serviceType,
+      notes,
+      contactPhone,
+      location,
+    });
 
-      await Notification.create({
-  userId: designerId,
-
-  title: "New Appointment Request",
-
-  message:
-    "You have received a new appointment request.",
-
-  type: "appointment",
-});
+    await Notification.create({
+      userId: designerId,
+      title: "New Appointment Request",
+      message: "You have received a new appointment request.",
+      type: "appointment",
+    });
 
     return res.status(201).json({
       success: true,
-      message:
-        "Appointment booked successfully",
+      message: "Appointment booked successfully",
       appointment,
     });
   } catch (error) {
     if (error.code === 11000) {
       return res.status(409).json({
         success: false,
-        message:
-          "Appointment already exists",
+        message: "Appointment already exists",
       });
     }
-
     next(error);
   }
 };
 
-//get appointments for client
+// Get appointments for client
 const getMyAppointments = async (req, res, next) => {
   try {
     const appointments = await Appointment.find({
@@ -139,42 +116,41 @@ const getMyAppointments = async (req, res, next) => {
   }
 };
 
-//get appointments for designer
-const getDesignerAppointments = async (
-  req,
-  res,
-  next
-) => {
+// Get appointments for designer
+const getDesignerAppointments = async (req, res, next) => {
   try {
-    const appointments = await Appointment.find({
-      designerId: req.user.userId,
-    })
-      .populate("clientId", "name email")
-      .sort({ createdAt: -1 });
+    const designerProfile = await DesignerProfile.findOne({ userId: req.user.userId });
 
-    res.status(200).json({
+    if (!designerProfile) {
+      return res.status(404).json({
+        success: false,
+        message: "Designer profile not found for this user account.",
+      });
+    }
+
+    const appointments = await Appointment.find({
+      $or: [
+        { designerId: req.user.userId },
+        { designerId: designerProfile._id }
+      ]
+    }).sort({ appointmentDate: 1 });
+
+    return res.status(200).json({
       success: true,
       count: appointments.length,
-      appointments,
+      appointments
     });
   } catch (error) {
     next(error);
   }
 };
 
-//get appointment by id
-const getAppointmentById = async (
-  req,
-  res,
-  next
-) => {
+// Get appointment by id
+const getAppointmentById = async (req, res, next) => {
   try {
-    const appointment =
-      await Appointment.findById(
-        req.params.id
-      )
-        .populate("clientId", "name email")
-        .populate("designerId", "name email");
+    const appointment = await Appointment.findById(req.params.id)
+      .populate("clientId", "name email")
+      .populate("designerId", "name email");
 
     if (!appointment) {
       return res.status(404).json({
@@ -184,12 +160,12 @@ const getAppointmentById = async (
     }
 
     const userId = req.user.userId;
+    const designerProfile = await DesignerProfile.findOne({ userId });
 
     const isOwner =
-      appointment.clientId._id.toString() ===
-        userId ||
-      appointment.designerId._id.toString() ===
-        userId;
+      appointment.clientId._id.toString() === userId ||
+      appointment.designerId._id.toString() === userId ||
+      (designerProfile && appointment.designerId.toString() === designerProfile._id.toString());
 
     if (!isOwner) {
       return res.status(403).json({
@@ -207,43 +183,33 @@ const getAppointmentById = async (
   }
 };
 
-//accept appointment
-const acceptAppointment = async (
-  req,
-  res,
-  next
-) => {
+// Accept appointment
+const acceptAppointment = async (req, res, next) => {
   try {
-    const appointment =
-      await Appointment.findById(
-        req.params.id
-      );
+    const appointment = await Appointment.findById(req.params.id);
 
     if (!appointment) {
       return res.status(404).json({
         success: false,
-        message:
-          "Appointment not found",
+        message: "Appointment not found",
       });
     }
 
-    if (
-      appointment.designerId.toString() !==
-      req.user.userId
-    ) {
+    // Lookup profile to handle User ID vs Profile ID validation fallback
+    const designerProfile = await DesignerProfile.findOne({ userId: req.user.userId });
+
+    const isAuthorized = 
+      appointment.designerId.toString() === req.user.userId ||
+      (designerProfile && appointment.designerId.toString() === designerProfile._id.toString());
+
+    if (!isAuthorized) {
       return res.status(403).json({
         success: false,
-        message:
-          "Unauthorized access",
+        message: "Unauthorized access",
       });
     }
 
-    if (
-      !canTransition(
-        appointment.status,
-        "accepted"
-      )
-    ) {
+    if (!canTransition(appointment.status, "accepted")) {
       return res.status(400).json({
         success: false,
         message: `Cannot change appointment from ${appointment.status} to accepted`,
@@ -251,24 +217,18 @@ const acceptAppointment = async (
     }
 
     appointment.status = "accepted";
-
     await appointment.save();
 
     await Notification.create({
-  userId: appointment.clientId,
-
-  title: "Appointment Accepted",
-
-  message:
-    "Your appointment request has been accepted.",
-
-  type: "appointment",
-});
+      userId: appointment.clientId,
+      title: "Appointment Accepted",
+      message: "Your appointment request has been accepted.",
+      type: "appointment",
+    });
 
     return res.status(200).json({
       success: true,
-      message:
-        "Appointment accepted successfully",
+      message: "Appointment accepted successfully",
       appointment,
     });
   } catch (error) {
@@ -276,43 +236,32 @@ const acceptAppointment = async (
   }
 };
 
-//reject appointment
-const rejectAppointment = async (
-  req,
-  res,
-  next
-) => {
+// Reject appointment
+const rejectAppointment = async (req, res, next) => {
   try {
-    const appointment =
-      await Appointment.findById(
-        req.params.id
-      );
+    const appointment = await Appointment.findById(req.params.id);
 
     if (!appointment) {
       return res.status(404).json({
         success: false,
-        message:
-          "Appointment not found",
+        message: "Appointment not found",
       });
     }
 
-    if (
-      appointment.designerId.toString() !==
-      req.user.userId
-    ) {
+    const designerProfile = await DesignerProfile.findOne({ userId: req.user.userId });
+
+    const isAuthorized = 
+      appointment.designerId.toString() === req.user.userId ||
+      (designerProfile && appointment.designerId.toString() === designerProfile._id.toString());
+
+    if (!isAuthorized) {
       return res.status(403).json({
         success: false,
-        message:
-          "Unauthorized access",
+        message: "Unauthorized access",
       });
     }
 
-    if (
-      !canTransition(
-        appointment.status,
-        "rejected"
-      )
-    ) {
+    if (!canTransition(appointment.status, "rejected")) {
       return res.status(400).json({
         success: false,
         message: `Cannot change appointment from ${appointment.status} to rejected`,
@@ -320,24 +269,18 @@ const rejectAppointment = async (
     }
 
     appointment.status = "rejected";
-
     await appointment.save();
 
     await Notification.create({
-  userId: appointment.clientId,
-
-  title: "Appointment Rejected",
-
-  message:
-    "Your appointment request has been rejected.",
-
-  type: "appointment",
-});
+      userId: appointment.clientId,
+      title: "Appointment Rejected",
+      message: "Your appointment request has been rejected.",
+      type: "appointment",
+    });
 
     return res.status(200).json({
       success: true,
-      message:
-        "Appointment rejected successfully",
+      message: "Appointment rejected successfully",
       appointment,
     });
   } catch (error) {
@@ -345,43 +288,32 @@ const rejectAppointment = async (
   }
 };
 
-//complete appointment
-const completeAppointment = async (
-  req,
-  res,
-  next
-) => {
+// Complete appointment
+const completeAppointment = async (req, res, next) => {
   try {
-    const appointment =
-      await Appointment.findById(
-        req.params.id
-      );
+    const appointment = await Appointment.findById(req.params.id);
 
     if (!appointment) {
       return res.status(404).json({
         success: false,
-        message:
-          "Appointment not found",
+        message: "Appointment not found",
       });
     }
 
-    if (
-      appointment.designerId.toString() !==
-      req.user.userId
-    ) {
+    const designerProfile = await DesignerProfile.findOne({ userId: req.user.userId });
+
+    const isAuthorized = 
+      appointment.designerId.toString() === req.user.userId ||
+      (designerProfile && appointment.designerId.toString() === designerProfile._id.toString());
+
+    if (!isAuthorized) {
       return res.status(403).json({
         success: false,
-        message:
-          "Unauthorized access",
+        message: "Unauthorized access",
       });
     }
 
-    if (
-      !canTransition(
-        appointment.status,
-        "completed"
-      )
-    ) {
+    if (!canTransition(appointment.status, "completed")) {
       return res.status(400).json({
         success: false,
         message: `Cannot change appointment from ${appointment.status} to completed`,
@@ -389,24 +321,18 @@ const completeAppointment = async (
     }
 
     appointment.status = "completed";
-
     await appointment.save();
 
     await Notification.create({
-  userId: appointment.clientId,
-
-  title: "Appointment Completed",
-
-  message:
-    "Your appointment has been completed.",
-
-  type: "appointment",
-});
+      userId: appointment.clientId,
+      title: "Appointment Completed",
+      message: "Your appointment has been completed.",
+      type: "appointment",
+    });
 
     return res.status(200).json({
       success: true,
-      message:
-        "Appointment completed successfully",
+      message: "Appointment completed successfully",
       appointment,
     });
   } catch (error) {
@@ -414,84 +340,58 @@ const completeAppointment = async (
   }
 };
 
-//cancel appointment
-const cancelAppointment = async (
-  req,
-  res,
-  next
-) => {
+// Cancel appointment
+const cancelAppointment = async (req, res, next) => {
   try {
-    const appointment =
-      await Appointment.findById(
-        req.params.id
-      );
+    const appointment = await Appointment.findById(req.params.id);
 
     if (!appointment) {
       return res.status(404).json({
         success: false,
-        message:
-          "Appointment not found",
+        message: "Appointment not found",
       });
     }
 
-    const userId =
-      req.user.userId;
+    const userId = req.user.userId;
+    const designerProfile = await DesignerProfile.findOne({ userId });
 
     const allowed =
-      appointment.clientId.toString() ===
-        userId ||
-      appointment.designerId.toString() ===
-        userId;
+      appointment.clientId.toString() === userId ||
+      appointment.designerId.toString() === userId ||
+      (designerProfile && appointment.designerId.toString() === designerProfile._id.toString());
 
     if (!allowed) {
       return res.status(403).json({
         success: false,
-        message:
-          "Unauthorized access",
+        message: "Unauthorized access",
       });
     }
 
-    if (
-      !canTransition(
-        appointment.status,
-        "cancelled"
-      )
-    ) {
+    if (!canTransition(appointment.status, "cancelled")) {
       return res.status(400).json({
         success: false,
         message: `Cannot change appointment from ${appointment.status} to cancelled`,
       });
     }
 
-    appointment.status =
-      "cancelled";
-
-    appointment.cancellationReason =
-      req.body.reason || "";
-
+    appointment.status = "cancelled";
+    appointment.cancellationReason = req.body.reason || "";
     await appointment.save();
 
-    const targetUser =
-appointment.clientId.toString() ===
-req.user.userId
-  ? appointment.designerId
-  : appointment.clientId;
+    const targetUser = appointment.clientId.toString() === req.user.userId
+      ? appointment.designerId
+      : appointment.clientId;
 
-await Notification.create({
-  userId: targetUser,
-
-  title: "Appointment Cancelled",
-
-  message:
-    "An appointment has been cancelled.",
-
-  type: "appointment",
-});
+    await Notification.create({
+      userId: targetUser,
+      title: "Appointment Cancelled",
+      message: "An appointment has been cancelled.",
+      type: "appointment",
+    });
 
     return res.status(200).json({
       success: true,
-      message:
-        "Appointment cancelled successfully",
+      message: "Appointment cancelled successfully",
       appointment,
     });
   } catch (error) {
@@ -499,7 +399,7 @@ await Notification.create({
   }
 };
 
-//valid_Transitions 
+// Valid Transitions Matrix
 const VALID_TRANSITIONS = {
   pending: ["accepted", "rejected", "cancelled"],
   accepted: ["completed", "cancelled"],
@@ -509,105 +409,69 @@ const VALID_TRANSITIONS = {
 };
 
 const canTransition = (currentStatus, nextStatus) => {
-  return VALID_TRANSITIONS[currentStatus]?.includes(
-    nextStatus
-  );
+  return VALID_TRANSITIONS[currentStatus]?.includes(nextStatus);
 };
 
-//mark appointment as paid
-const markAppointmentPaid =
-async (req, res, next) => {
+// Mark appointment as paid
+const markAppointmentPaid = async (req, res, next) => {
   try {
-
-    const appointment =
-      await Appointment.findById(
-        req.params.id
-      );
+    const appointment = await Appointment.findById(req.params.id);
 
     if (!appointment) {
       return res.status(404).json({
         success: false,
-        message:
-          "Appointment not found",
+        message: "Appointment not found",
       });
     }
 
-    if (
-      appointment.clientId.toString() !==
-      req.user.userId
-    ) {
+    if (appointment.clientId.toString() !== req.user.userId) {
       return res.status(403).json({
         success: false,
-        message:
-          "Only client can mark payment",
+        message: "Only client can mark payment",
       });
     }
 
-const { amount } = req.body;
+    const { amount } = req.body;
 
-if (
-  appointment.status !==
-  "accepted"
-) {
-  return res.status(400).json({
-    success: false,
-    message:
-      "Appointment must be accepted before payment",
-  });
-}
+    if (appointment.status !== "accepted") {
+      return res.status(400).json({
+        success: false,
+        message: "Appointment must be accepted before payment",
+      });
+    }
 
-if (
-  appointment.paymentStatus ===
-  "paid"
-) {
-  return res.status(400).json({
-    success: false,
-    message:
-      "Appointment already marked as paid",
-  });
-}
+    if (appointment.paymentStatus === "paid") {
+      return res.status(400).json({
+        success: false,
+        message: "Appointment already marked as paid",
+      });
+    }
 
-if (
-  !amount ||
-  Number(amount) <= 0
-) {
-  return res.status(400).json({
-    success: false,
-    message:
-      "Valid payment amount required",
-  });
-}
+    if (!amount || Number(amount) <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid payment amount required",
+      });
+    }
 
-appointment.paymentStatus =
-  "paid";
-
-appointment.paymentAmount =
-  Number(amount);
-
-appointment.paymentDate =
-  new Date();
+    appointment.paymentStatus = "paid";
+    appointment.paymentAmount = Number(amount);
+    appointment.paymentDate = new Date();
 
     await appointment.save();
 
     await Notification.create({
-  userId:
-    appointment.designerId,
-
-  title: "Payment Received",
-
-  message:
-    "Client has marked payment as completed.",
-
-  type: "payment",
-});
-
-res.status(200).json({
-      success: true,
-      message:
-        "Payment marked successfully",
-      appointment,
+      userId: appointment.designerId,
+      title: "Payment Received",
+      message: "Client has marked payment as completed.",
+      type: "payment",
     });
 
+    res.status(200).json({
+      success: true,
+      message: "Payment marked successfully",
+      appointment,
+    });
   } catch (error) {
     next(error);
   }

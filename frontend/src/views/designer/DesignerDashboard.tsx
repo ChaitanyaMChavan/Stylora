@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
-import { Calendar, User, Clock, CheckCircle2, XCircle, Loader2, AlertCircle, Inbox } from 'lucide-react';
+import { Calendar, User, Clock, CheckCircle2, XCircle, Loader2, AlertCircle, Inbox, CheckSquare } from 'lucide-react';
 
 interface AppointmentData {
   _id: string;
@@ -32,7 +32,6 @@ export const DesignerDashboard: React.FC = () => {
       setLoading(true);
       const activeToken = token || localStorage.getItem('stylora_auth_token');
       
-      // Exact match with your backend router definition: GET /api/appointments/designer
       const response = await axios.get('http://localhost:5000/api/appointments/designer', {
         headers: { Authorization: `Bearer ${activeToken}` }
       });
@@ -54,7 +53,7 @@ export const DesignerDashboard: React.FC = () => {
     fetchDesignerMatrix();
   }, [token]);
 
-  // Handle status actions mapping cleanly to your custom /:id/accept or /:id/reject routes
+  // Handles state updates for accept and reject routines
   const handleUpdateStatus = async (appointmentId: string, action: 'accept' | 'reject') => {
     const confirmAction = window.confirm(`Confirm action to ${action.toUpperCase()} this booking request?`);
     if (!confirmAction) return;
@@ -63,15 +62,13 @@ export const DesignerDashboard: React.FC = () => {
       setProcessingId(appointmentId);
       const activeToken = token || localStorage.getItem('stylora_auth_token');
 
-      // Exact match with your backend endpoints: PUT /api/appointments/:id/accept or /api/appointments/:id/reject
       const response = await axios.put(
         `http://localhost:5000/api/appointments/${appointmentId}/${action}`,
-        {}, // Body payload can remain empty as parameter parameters handle query targets
+        {},
         { headers: { Authorization: `Bearer ${activeToken}` } }
       );
 
       if (response.data.success) {
-        // Update state locally based on what action was fired
         const targetedStatus = action === 'accept' ? 'accepted' : 'rejected';
         setAppointments(prev =>
           prev.map(apt => apt._id === appointmentId ? { ...apt, status: targetedStatus } : apt)
@@ -80,6 +77,34 @@ export const DesignerDashboard: React.FC = () => {
     } catch (err: any) {
       console.error(`Error executing ${action} routine:`, err);
       alert(err.response?.data?.message || `Could not successfully execute the booking state transformation.`);
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  // NEW: Handles the project completion state routine matching PUT /api/appointments/:id/complete
+  const handleCompleteProject = async (appointmentId: string) => {
+    const confirmAction = window.confirm("Are you sure you want to log this space/consultation as officially COMPLETED?");
+    if (!confirmAction) return;
+
+    try {
+      setProcessingId(appointmentId);
+      const activeToken = token || localStorage.getItem('stylora_auth_token');
+
+      const response = await axios.put(
+        `http://localhost:5000/api/appointments/${appointmentId}/complete`,
+        {},
+        { headers: { Authorization: `Bearer ${activeToken}` } }
+      );
+
+      if (response.data.success) {
+        setAppointments(prev =>
+          prev.map(apt => apt._id === appointmentId ? { ...apt, status: 'completed' } : apt)
+        );
+      }
+    } catch (err: any) {
+      console.error('Error executing complete routine:', err);
+      alert(err.response?.data?.message || 'Could not successfully mark appointment as completed.');
     } finally {
       setProcessingId(null);
     }
@@ -174,13 +199,15 @@ export const DesignerDashboard: React.FC = () => {
               ? apt.clientId.name
               : 'Registered Client';
               
-            const isPending = apt.status.toLowerCase() === 'pending';
+            const currentStatus = apt.status.toLowerCase();
+            const isPending = currentStatus === 'pending';
+            const isActive = currentStatus === 'accepted' || currentStatus === 'confirmed';
 
             return (
               <div 
                 key={apt._id} 
                 className={`bg-white border p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6 transition-all ${
-                  apt.status.toLowerCase() === 'cancelled' || apt.status.toLowerCase() === 'rejected' ? 'border-neutral-200/40 opacity-50' : 'border-neutral-200/80 hover:border-neutral-400'
+                  currentStatus === 'cancelled' || currentStatus === 'rejected' ? 'border-neutral-200/40 opacity-50' : 'border-neutral-200/80 hover:border-neutral-400'
                 }`}
               >
                 <div className="space-y-2">
@@ -211,7 +238,8 @@ export const DesignerDashboard: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-3 justify-end min-w-[180px]">
-                  {isPending ? (
+                  {/* Option Set A: Request is waiting for validation */}
+                  {isPending && (
                     <div className="flex items-center gap-2 w-full lg:w-auto">
                       <button
                         disabled={processingId === apt._id}
@@ -230,10 +258,24 @@ export const DesignerDashboard: React.FC = () => {
                         <span>Reject</span>
                       </button>
                     </div>
-                  ) : (
+                  )}
+
+                  {/* Option Set B: Request was accepted and can now be marked complete */}
+                  {isActive && (
+                    <button
+                      disabled={processingId === apt._id}
+                      onClick={() => handleCompleteProject(apt._id)}
+                      className="w-full lg:w-auto border border-emerald-600 text-emerald-600 hover:bg-emerald-50/40 text-[10px] font-mono tracking-widest uppercase px-4 py-2 flex items-center justify-center gap-1.5 transition-all font-bold"
+                    >
+                      <CheckSquare size={12} />
+                      <span>Mark as Completed</span>
+                    </button>
+                  )}
+
+                  {/* Option Set C: Terminal state achieved (Completed, Cancelled, Rejected) */}
+                  {!isPending && !isActive && (
                     <span className={`inline-block px-3 py-1 text-[9px] font-mono font-bold tracking-widest uppercase border ${
-                      apt.status.toLowerCase() === 'accepted' || apt.status.toLowerCase() === 'confirmed' ? 'bg-emerald-50/60 border-emerald-200 text-emerald-600' :
-                      apt.status.toLowerCase() === 'cancelled' || apt.status.toLowerCase() === 'rejected' ? 'bg-rose-50/60 border-rose-200 text-rose-600' :
+                      currentStatus === 'completed' ? 'bg-emerald-600 border-emerald-600 text-white' :
                       'bg-neutral-50 border-neutral-200 text-neutral-500'
                     }`}>
                       {apt.status}
