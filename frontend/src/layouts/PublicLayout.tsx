@@ -1,10 +1,11 @@
 import React from 'react';
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; // Verify this matches your context folder depth
 import { LayoutDashboard, LogOut } from 'lucide-react';
 
 export const PublicLayout: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, token, logoutUser } = useAuth();
 
   // Active session authentication check flags
@@ -31,10 +32,10 @@ export const PublicLayout: React.FC = () => {
 
         {/* Center Workspace Matrix Access Paths */}
         <div className="hidden md:flex items-center gap-8 text-[11px] font-mono tracking-widest uppercase text-neutral-500">
-          <Link to="/" className="hover:text-black transition-colors">Home</Link>
-          <Link to="/designers" className="hover:text-black transition-colors font-bold text-black">Discover Designers</Link>
-          <Link to="/about" className="hover:text-black transition-colors">About Us</Link>
-          <Link to="/contact" className="hover:text-black transition-colors">Contact Us</Link>
+          <Link to="/" className={`hover:text-black transition-colors ${location.pathname === '/' ? 'font-bold text-black' : ''}`}>Home</Link>
+          <Link to="/designers" className={`hover:text-black transition-colors ${location.pathname === '/designers' ? 'font-bold text-black' : ''}`}>Discover Designers</Link>
+          <Link to="/about" className={`hover:text-black transition-colors ${location.pathname === '/about' ? 'font-bold text-black' : ''}`}>About Us</Link>
+          <Link to="/contact" className={`hover:text-black transition-colors ${location.pathname === '/contact' ? 'font-bold text-black' : ''}`}>Contact Us</Link>
         </div>
 
         {/* Right Authentication Rendering Logic Gates */}

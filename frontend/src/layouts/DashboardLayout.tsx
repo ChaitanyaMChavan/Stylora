@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { LogOut, Menu, X } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 interface SidebarItem {
   label: string;
@@ -17,6 +18,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ role, menuItem
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { logoutUser } = useAuth();
 
   return (
     <div className="min-h-screen flex bg-[#FBFBFA]">
@@ -45,7 +47,13 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ role, menuItem
           </nav>
         </div>
 
-        <button onClick={() => navigate('/login')} className="flex items-center gap-3 px-4 py-3 text-xs uppercase tracking-widest text-red-400 hover:bg-neutral-900 transition-colors w-full text-left cursor-pointer">
+        <button 
+          onClick={() => {
+            logoutUser();
+            navigate('/login');
+          }} 
+          className="flex items-center gap-3 px-4 py-3 text-xs uppercase tracking-widest text-red-400 hover:bg-neutral-900 transition-colors w-full text-left cursor-pointer"
+        >
           <LogOut size={16} />
           Sign Out
         </button>
@@ -73,10 +81,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ role, menuItem
                 <nav className="flex flex-col gap-2">
                   {menuItems.map((item) => (
                     <Link
-                      key={item.path}
-                      to={item.path}
-                      onClick={() => setIsSidebarOpen(false)}
-                      className="flex items-center gap-3 py-3 text-xs uppercase tracking-widest text-neutral-400"
+                       key={item.path}
+                       to={item.path}
+                       onClick={() => setIsSidebarOpen(false)}
+                       className="flex items-center gap-3 py-3 text-xs uppercase tracking-widest text-neutral-400"
                     >
                       {item.icon}
                       {item.label}
@@ -84,7 +92,13 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ role, menuItem
                   ))}
                 </nav>
               </div>
-              <button onClick={() => navigate('/login')} className="flex items-center gap-3 py-3 text-xs uppercase tracking-widest text-red-400">
+              <button 
+                onClick={() => {
+                  logoutUser();
+                  navigate('/login');
+                }} 
+                className="flex items-center gap-3 py-3 text-xs uppercase tracking-widest text-red-400"
+              >
                 <LogOut size={16} /> Logout
               </button>
             </div>

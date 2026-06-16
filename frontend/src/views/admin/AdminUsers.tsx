@@ -101,7 +101,7 @@ export const AdminUsers: React.FC = () => {
                 {user.status || 'active'}
               </span>
 
-              {user.role !== 'admin' && (
+              {/* {user.role !== 'admin' && (
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -110,7 +110,7 @@ export const AdminUsers: React.FC = () => {
                 >
                   {user.status === 'active' ? 'Suspend' : 'Activate'}
                 </Button>
-              )}
+              )} */}
             </div>
           </Card>
         ))}

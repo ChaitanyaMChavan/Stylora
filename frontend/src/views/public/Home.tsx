@@ -63,7 +63,7 @@ export const Home: React.FC = () => {
       {/* Asymmetric Split Spotlights Showcase */}
       <section className="max-w-7xl mx-auto px-6 space-y-12">
         <div className="border-b border-black/5 pb-4">
-          <h2 className="text-3xl font-luxury uppercase tracking-wide">Featured Atelier Collections</h2>
+          <h2 className="text-3xl font-luxury uppercase tracking-wide">Featured Studio Collections</h2>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
