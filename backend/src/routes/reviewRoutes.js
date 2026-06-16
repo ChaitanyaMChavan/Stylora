@@ -4,6 +4,7 @@ const {
   createReview,
   getDesignerReviews,
   getDesignerRating,
+  getMyReviews,
 } = require(
   "../controllers/reviewController"
 );
@@ -20,6 +21,12 @@ router.post(
   "/",
   protect,
   createReview
+);
+
+router.get(
+  "/my-reviews",
+  protect,
+  getMyReviews
 );
 
 router.get(

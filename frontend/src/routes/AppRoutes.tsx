@@ -26,6 +26,7 @@ import { DesignerDashboard } from '../views/designer/DesignerDashboard';
 import { DesignerPortfolio } from '../views/designer/DesignerPortfolio';
 import { DesignerAppointments } from '../views/designer/DesignerAppointments';
 import { DesignerProfileSetup } from '../views/designer/DesignerProfileSetup';
+import { DesignerNotifications } from '../views/designer/DesignerNotifications';
 
 // Administrative Command HQ Views
 import { AdminDashboard } from '../views/admin/AdminDashboard';
@@ -44,6 +45,7 @@ const designerNavigation = [
   { label: 'Studio Engine', path: '/designer/dashboard', icon: <LayoutDashboard size={16} /> },
   { label: 'Portfolio Studio', path: '/designer/portfolio', icon: <Image size={16} /> },
   { label: 'Bookings Manager', path: '/designer/appointments', icon: <Calendar size={16} /> },
+  { label: 'Notifications', path: '/designer/notifications', icon: <Bell size={16} /> },
   { label: 'Profile Setup', path: '/designer/profile', icon: <User size={16} /> },
 ];
 
@@ -83,6 +85,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="dashboard" element={<DesignerDashboard />} />
           <Route path="portfolio" element={<DesignerPortfolio />} />
           <Route path="appointments" element={<DesignerAppointments />} />
+          <Route path="notifications" element={<DesignerNotifications />} />
           <Route path="profile" element={<DesignerProfileSetup />} />
         </Route>
 

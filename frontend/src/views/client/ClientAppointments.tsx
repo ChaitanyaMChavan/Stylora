@@ -177,12 +177,11 @@ export const ClientAppointments: React.FC = () => {
 
   return (
     <div className="p-8 bg-[#FAFAFA] min-h-screen relative animate-fade-in">
-      
+
       {/* 1. DYNAMIC NOTIFICATION TOAST OVERLAY PANEL */}
       {toast.show && (
-        <div className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-4 border font-mono text-xs tracking-wider transition-all shadow-md max-w-sm ${
-          toast.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'
-        }`}>
+        <div className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-4 border font-mono text-xs tracking-wider transition-all shadow-md max-w-sm ${toast.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'
+          }`}>
           {toast.type === 'success' ? <CheckCircle2 size={16} className="text-emerald-600" /> : <AlertCircle size={16} className="text-rose-600" />}
           <span>{toast.message.toUpperCase()}</span>
         </div>
@@ -202,17 +201,16 @@ export const ClientAppointments: React.FC = () => {
               {confirmModal.message}
             </p>
             <div className="flex justify-end gap-3 font-mono text-[10px] tracking-widest uppercase">
-              <button 
+              <button
                 onClick={closeConfirmation}
                 className="border border-neutral-200 hover:border-black text-neutral-500 hover:text-black px-4 py-2 transition-all"
               >
                 Go Back
               </button>
-              <button 
+              <button
                 onClick={handleConfirmedAction}
-                className={`px-4 py-2 text-white transition-all ${
-                  confirmModal.type === 'cancel' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-black hover:bg-neutral-800'
-                }`}
+                className={`px-4 py-2 text-white transition-all ${confirmModal.type === 'cancel' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-black hover:bg-neutral-800'
+                  }`}
               >
                 Confirm & Proceed
               </button>
@@ -261,11 +259,10 @@ export const ClientAppointments: React.FC = () => {
             const isEligibleToPay = apt.status.toLowerCase() === 'accepted' && apt.paymentStatus?.toLowerCase() !== 'paid';
 
             return (
-              <div 
-                key={apt._id} 
-                className={`bg-white border p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all ${
-                  apt.status.toLowerCase() === 'cancelled' ? 'border-neutral-200/50 opacity-60' : 'border-neutral-200/90 hover:border-neutral-400'
-                }`}
+              <div
+                key={apt._id}
+                className={`bg-white border p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all ${apt.status.toLowerCase() === 'cancelled' ? 'border-neutral-200/50 opacity-60' : 'border-neutral-200/90 hover:border-neutral-400'
+                  }`}
               >
                 <div className="space-y-2 max-w-sm">
                   <span className="text-[9px] font-mono text-neutral-400 tracking-wider uppercase block">
@@ -294,12 +291,11 @@ export const ClientAppointments: React.FC = () => {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3 justify-between md:justify-end min-w-[280px]">
-                  <span className={`inline-block px-3 py-1 text-[9px] font-mono font-bold tracking-widest uppercase border ${
-                    apt.status.toLowerCase() === 'accepted' || apt.status.toLowerCase() === 'confirmed' ? 'bg-emerald-50/60 border-emerald-200 text-emerald-600' :
-                    apt.status.toLowerCase() === 'pending' ? 'bg-amber-50/60 border-amber-200 text-amber-600' :
-                    apt.status.toLowerCase() === 'cancelled' || apt.status.toLowerCase() === 'rejected' ? 'bg-rose-50/60 border-rose-200 text-rose-600' :
-                    'bg-neutral-50 border-neutral-200 text-neutral-500'
-                  }`}>
+                  <span className={`inline-block px-3 py-1 text-[9px] font-mono font-bold tracking-widest uppercase border ${apt.status.toLowerCase() === 'accepted' || apt.status.toLowerCase() === 'confirmed' ? 'bg-emerald-50/60 border-emerald-200 text-emerald-600' :
+                      apt.status.toLowerCase() === 'pending' ? 'bg-amber-50/60 border-amber-200 text-amber-600' :
+                        apt.status.toLowerCase() === 'cancelled' || apt.status.toLowerCase() === 'rejected' ? 'bg-rose-50/60 border-rose-200 text-rose-600' :
+                          'bg-neutral-50 border-neutral-200 text-neutral-500'
+                    }`}>
                     {apt.status}
                     {apt.paymentStatus?.toLowerCase() === 'paid' && " (PAID)"}
                   </span>

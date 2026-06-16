@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Rich metallic luxury gold gradient -->
+    <linearGradient id="styloraGold" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9A7B2C" />
+      <stop offset="50%" stop-color="#D4AF37" />
+      <stop offset="100%" stop-color="#F3E5AB" />
+    </linearGradient>
+    
+    <!-- Subtle drop shadow to give the monogram depth -->
+    <filter id="luxuryDropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <!-- Deep Haute-Couture Satin Charcoal Base Square -->
+  <rect width="512" height="512" rx="128" fill="#0D0D0D"/>
+
+  <g filter="url(#luxuryDropShadow)">
+    <!-- Architectural Fine-Line Diamond Frame -->
+    <path d="M 256 64 L 448 256 L 256 448 L 64 256 Z" 
+          fill="none" 
+          stroke="url(#styloraGold)" 
+          stroke-width="6" 
+          stroke-opacity="0.4"
+          stroke-dasharray="16 8"/>
+    
+    <!-- Outer Solid Diamond Border Anchor -->
+    <path d="M 256 76 L 436 256 L 256 436 L 76 256 Z" 
+          fill="none" 
+          stroke="url(#styloraGold)" 
+          stroke-width="3" 
+          stroke-opacity="0.8"/>
+
+    {/* The Avant-Garde Interlocking "S" Monogram */}
+    <path d="M 330 185 
+             C 330 150, 295 140, 256 140 
+             C 200 140, 185 165, 185 195 
+             C 185 240, 325 245, 325 295 
+             C 325 340, 290 372, 256 372 
+             C 205 372, 180 345, 180 315" 
+          fill="none" 
+          stroke="url(#styloraGold)" 
+          stroke-width="36" 
+          stroke-linecap="square" 
+          stroke-linejoin="miter"/>
+  </g>
+</svg>
