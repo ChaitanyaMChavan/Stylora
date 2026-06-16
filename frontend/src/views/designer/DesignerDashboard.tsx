@@ -16,6 +16,7 @@ interface AppointmentData {
   contactPhone?: string;
   location: string;
   status: string;
+  paymentStatus?: string;
 }
 
 interface ToastState {
@@ -346,14 +347,22 @@ export const DesignerDashboard: React.FC = () => {
 
                   {/* Option Set B: Request was accepted and can now be marked complete */}
                   {isActive && (
-                    <button
-                      disabled={processingId === apt._id}
-                      onClick={() => openConfirmation(apt._id, 'complete')}
-                      className="w-full lg:w-auto border border-emerald-600 text-emerald-600 hover:bg-emerald-50/40 text-[10px] font-mono tracking-widest uppercase px-4 py-2 flex items-center justify-center gap-1.5 transition-all font-bold"
-                    >
-                      <CheckSquare size={12} />
-                      <span>Mark as Completed</span>
-                    </button>
+                    <>
+                      {apt.paymentStatus?.toLowerCase() === 'paid' ? (
+                        <button
+                          disabled={processingId === apt._id}
+                          onClick={() => openConfirmation(apt._id, 'complete')}
+                          className="w-full lg:w-auto border border-emerald-600 text-emerald-600 hover:bg-emerald-50/40 text-[10px] font-mono tracking-widest uppercase px-4 py-2 flex items-center justify-center gap-1.5 transition-all font-bold"
+                        >
+                          <CheckSquare size={12} />
+                          <span>Mark as Completed</span>
+                        </button>
+                      ) : (
+                        <span className="text-[10px] font-mono tracking-widest uppercase text-neutral-400 bg-neutral-100 border border-neutral-200 px-3 py-2">
+                          Awaiting Payment
+                        </span>
+                      )}
+                    </>
                   )}
 
                   {/* Option Set C: Terminal state achieved (Completed, Cancelled, Rejected) */}
