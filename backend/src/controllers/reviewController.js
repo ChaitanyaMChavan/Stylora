@@ -184,8 +184,28 @@ res.status(200).json({
     }
   };
 
+/**
+ * Get Reviews of Logged in Client
+ */
+const getMyReviews = async (req, res, next) => {
+  try {
+    const reviews = await Review.find({ clientId: req.user.userId })
+      .populate("designerId", "name email")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: reviews.length,
+      reviews,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createReview,
   getDesignerReviews,
   getDesignerRating,
+  getMyReviews,
 };

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card } from '../../components/ui/card';
+import {  useNavigate } from 'react-router-dom';
 import { Sparkles, Eye, ShieldCheck, PenTool, ArrowUpRight } from 'lucide-react';
 
 export const About: React.FC = () => {
@@ -20,7 +21,7 @@ export const About: React.FC = () => {
       icon: <ShieldCheck size={16} className="text-[#D4AF37]" /> 
     }
   ];
-
+    const navigate = useNavigate();
   return (
     <div className="space-y-20 py-6 px-8 animate-fade-in">
       {/* Editorial Hero Banner */}
@@ -89,7 +90,7 @@ export const About: React.FC = () => {
           </p>
         </div>
         <div className="z-10 shrink-0">
-          <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-[#D4AF37] bg-transparent text-[#D4AF37] px-8 py-3.5 text-[10px] uppercase tracking-widest font-bold hover:bg-[#D4AF37] hover:text-black transition-all duration-300 font-mono cursor-pointer">
+          <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-[#D4AF37] bg-transparent text-[#D4AF37] px-8 py-3.5 text-[10px] uppercase tracking-widest font-bold hover:bg-[#D4AF37] hover:text-black transition-all duration-300 font-mono cursor-pointer" onClick={() => navigate('/register')} >
             Apply to Stylora
           </button>
         </div>

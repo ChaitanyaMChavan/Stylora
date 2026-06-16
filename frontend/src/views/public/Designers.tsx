@@ -143,7 +143,7 @@ export const Designers: React.FC = () => {
                     }}
                     className="text-black font-bold hover:text-[#D4AF37] transition-colors border-b border-black hover:border-[#D4AF37] pb-0.5 text-[10px]"
                   >
-                    Enter Atelier
+                    Enter Stylora
                   </button>
                 </div>
               </div>
