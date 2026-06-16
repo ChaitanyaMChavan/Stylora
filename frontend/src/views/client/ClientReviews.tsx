@@ -21,6 +21,12 @@ interface ReviewLog {
   createdAt: string;
 }
 
+interface ToastState {
+  show: boolean;
+  message: string;
+  type: 'success' | 'error';
+}
+
 export const ClientReviews: React.FC = () => {
   const { token } = useAuth();
   const [completedBookings, setCompletedBookings] = useState<AppointmentData[]>([]);
@@ -34,6 +40,14 @@ export const ClientReviews: React.FC = () => {
   const [comment, setComment] = useState<string>('');
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'success' });
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast(prev => ({ ...prev, show: false }));
+    }, 4000);
+  };
 
   const fetchDataHub = async () => {
     try {
@@ -76,7 +90,7 @@ export const ClientReviews: React.FC = () => {
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedApt) return alert("Please map an operational workspace instance reference.");
+    if (!selectedApt) return showToast("Please map an operational workspace instance reference.", "error");
 
     try {
       setSubmitting(true);
@@ -99,13 +113,14 @@ export const ClientReviews: React.FC = () => {
 
       if (response.data.success) {
         setSuccessMsg("Evaluation ledger entry committed successfully.");
+        showToast("Evaluation ledger entry committed successfully.", "success");
         setComment('');
         setSelectedApt('');
         fetchDataHub(); // Refresh list to reflect changes
       }
     } catch (err: any) {
       console.error('Error submitting feedback vector:', err);
-      alert(err.response?.data?.message || 'Failed to dispatch evaluation schema packet.');
+      showToast(err.response?.data?.message || 'Failed to dispatch evaluation schema packet.', "error");
     } finally {
       setSubmitting(false);
     }
@@ -251,6 +266,16 @@ export const ClientReviews: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* DYNAMIC NOTIFICATION TOAST OVERLAY PANEL */}
+      {toast.show && (
+        <div className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-4 border font-mono text-xs tracking-wider transition-all shadow-md max-w-sm ${
+          toast.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'
+        }`}>
+          {toast.type === 'success' ? <CheckCircle size={16} className="text-emerald-600" /> : <AlertCircle size={16} className="text-rose-600" />}
+          <span>{toast.message.toUpperCase()}</span>
+        </div>
+      )}
     </div>
   );
 };

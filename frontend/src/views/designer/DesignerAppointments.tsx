@@ -12,7 +12,9 @@ import {
   X, 
   MessageSquare, 
   Inbox, 
-  AlertCircle 
+  AlertCircle,
+  CheckCircle2,
+  AlertTriangle
 } from 'lucide-react';
 
 interface AppointmentRequest {
@@ -28,12 +30,41 @@ interface AppointmentRequest {
   createdAt: string;
 }
 
+interface ToastState {
+  show: boolean;
+  message: string;
+  type: 'success' | 'error';
+}
+
+interface ConfirmationModalState {
+  show: boolean;
+  appointmentId: string | null;
+  action: 'accept' | 'reject' | null;
+  title: string;
+  message: string;
+}
+
 export const DesignerAppointments: React.FC = () => {
   const { token } = useAuth();
   const [requests, setRequests] = useState<AppointmentRequest[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [actioningId, setActioningId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'success' });
+  const [confirmModal, setConfirmModal] = useState<ConfirmationModalState>({
+    show: false,
+    appointmentId: null,
+    action: null,
+    title: '',
+    message: ''
+  });
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast(prev => ({ ...prev, show: false }));
+    }, 4000);
+  };
 
   // Fetch all incoming appointments for this logged-in designer
   const fetchRequests = async () => {
@@ -62,8 +93,44 @@ export const DesignerAppointments: React.FC = () => {
     fetchRequests();
   }, [token]);
 
+  const openConfirmation = (appointmentId: string, action: 'accept' | 'reject') => {
+    if (action === 'accept') {
+      setConfirmModal({
+        show: true,
+        appointmentId,
+        action: 'accept',
+        title: 'Accept Consultation Request',
+        message: 'Are you sure you want to approve this client consultation request? Doing so will log this into your active commissions ledger.'
+      });
+    } else {
+      setConfirmModal({
+        show: true,
+        appointmentId,
+        action: 'reject',
+        title: 'Decline Consultation Request',
+        message: 'Are you sure you want to decline this consultation request? This operation cannot be reversed.'
+      });
+    }
+  };
+
+  const closeConfirmation = () => {
+    setConfirmModal({ show: false, appointmentId: null, action: null, title: '', message: '' });
+  };
+
+  const handleConfirmedAction = () => {
+    const { appointmentId, action } = confirmModal;
+    if (!appointmentId || !action) return;
+
+    closeConfirmation();
+    if (action === 'accept') {
+      executeAccept(appointmentId);
+    } else if (action === 'reject') {
+      executeReject(appointmentId);
+    }
+  };
+
   // Handle Accept Pipeline Action
-  const handleAccept = async (id: string) => {
+  const executeAccept = async (id: string) => {
     try {
       setActioningId(id);
       const activeToken = token || localStorage.getItem('stylora_auth_token');
@@ -73,6 +140,7 @@ export const DesignerAppointments: React.FC = () => {
       });
 
       if (response.data.success) {
+        showToast("Appointment request accepted successfully.", "success");
         // Optimistically update status locally in UI array state
         setRequests(prev => 
           prev.map(req => req._id === id ? { ...req, status: 'accepted' } : req)
@@ -80,16 +148,14 @@ export const DesignerAppointments: React.FC = () => {
       }
     } catch (err: any) {
       console.error("Accept operation dropped by gatekeeper:", err);
-      alert(err.response?.data?.message || "Failed to accept appointment.");
+      showToast(err.response?.data?.message || "Failed to accept appointment.", "error");
     } finally {
       setActioningId(null);
     }
   };
 
   // Handle Reject Pipeline Action
-  const handleReject = async (id: string) => {
-    if (!window.confirm("Are you sure you want to decline this consultation request?")) return;
-    
+  const executeReject = async (id: string) => {
     try {
       setActioningId(id);
       const activeToken = token || localStorage.getItem('stylora_auth_token');
@@ -99,13 +165,14 @@ export const DesignerAppointments: React.FC = () => {
       });
 
       if (response.data.success) {
+        showToast("Appointment request declined successfully.", "success");
         setRequests(prev => 
           prev.map(req => req._id === id ? { ...req, status: 'rejected' } : req)
         );
       }
     } catch (err: any) {
       console.error("Reject operation dropped by gatekeeper:", err);
-      alert(err.response?.data?.message || "Failed to reject appointment.");
+      showToast(err.response?.data?.message || "Failed to reject appointment.", "error");
     } finally {
       setActioningId(null);
     }
@@ -232,14 +299,14 @@ export const DesignerAppointments: React.FC = () => {
                   {isPending ? (
                     <>
                       <button
-                        onClick={() => handleReject(req._id)}
+                        onClick={() => openConfirmation(req._id, 'reject')}
                         disabled={actioningId !== null}
                         className="px-4 py-2 border border-neutral-200 text-neutral-500 hover:text-rose-600 hover:border-rose-300 font-mono text-[11px] uppercase tracking-wider flex items-center gap-1.5 transition-colors disabled:opacity-40"
                       >
                         <X size={12} /> Decline
                       </button>
                       <button
-                        onClick={() => handleAccept(req._id)}
+                        onClick={() => openConfirmation(req._id, 'accept')}
                         disabled={actioningId !== null}
                         className="px-5 py-2 bg-black text-white hover:bg-neutral-900 font-mono text-[11px] uppercase tracking-widest font-bold flex items-center gap-1.5 transition-colors disabled:opacity-40"
                       >
@@ -264,6 +331,48 @@ export const DesignerAppointments: React.FC = () => {
         </div>
       )}
 
+      {/* CUSTOM ACTION CONFIRMATION MODAL OVERLAY */}
+      {confirmModal.show && (
+        <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-neutral-300 w-full max-w-md p-6 animate-scale-up animate-fade-in">
+            <div className="flex items-center gap-2 border-b border-neutral-200 pb-3 mb-4">
+              <AlertTriangle size={16} className={confirmModal.action === 'reject' ? 'text-rose-500' : 'text-[#D4AF37]'} />
+              <h2 className="text-sm font-mono uppercase font-bold tracking-widest text-black">
+                {confirmModal.title}
+              </h2>
+            </div>
+            <p className="text-xs font-mono text-neutral-500 tracking-wide leading-relaxed mb-6">
+              {confirmModal.message}
+            </p>
+            <div className="flex justify-end gap-3 font-mono text-[10px] tracking-widest uppercase">
+              <button 
+                onClick={closeConfirmation}
+                className="border border-neutral-200 hover:border-black text-neutral-500 hover:text-black px-4 py-2 transition-all"
+              >
+                Go Back
+              </button>
+              <button 
+                onClick={handleConfirmedAction}
+                className={`px-4 py-2 text-white transition-all ${
+                  confirmModal.action === 'reject' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-black hover:bg-neutral-800'
+                }`}
+              >
+                Confirm & Proceed
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DYNAMIC NOTIFICATION TOAST OVERLAY PANEL */}
+      {toast.show && (
+        <div className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-4 border font-mono text-xs tracking-wider transition-all shadow-md max-w-sm ${
+          toast.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'
+        }`}>
+          {toast.type === 'success' ? <CheckCircle2 size={16} className="text-emerald-600" /> : <AlertCircle size={16} className="text-rose-600" />}
+          <span>{toast.message.toUpperCase()}</span>
+        </div>
+      )}
     </div>
   );
 };
