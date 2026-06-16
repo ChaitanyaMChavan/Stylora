@@ -30,7 +30,6 @@ import { DesignerProfileSetup } from '../views/designer/DesignerProfileSetup';
 // Administrative Command HQ Views
 import { AdminDashboard } from '../views/admin/AdminDashboard';
 import { AdminUsers } from '../views/admin/AdminUsers';
-import { AdminDesigners } from '../views/admin/AdminDesigners';
 import { AdminAppointments } from '../views/admin/AdminAppointments';
 
 // Navigation configuration objects mapped to sidebars
@@ -51,7 +50,6 @@ const designerNavigation = [
 const adminNavigation = [
   { label: 'HQ Terminal', path: '/admin/dashboard', icon: <LayoutDashboard size={16} /> },
   { label: 'Users Grid', path: '/admin/users', icon: <Users size={16} /> },
-  { label: 'Verified Designers', path: '/admin/designers', icon: <Shield size={16} /> },
   { label: 'System Appointments', path: '/admin/appointments', icon: <Calendar size={16} /> },
 ];
 
@@ -93,7 +91,6 @@ export const AppRoutes: React.FC = () => {
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="users" element={<AdminUsers />} />
-          <Route path="designers" element={<AdminDesigners />} />
           <Route path="appointments" element={<AdminAppointments />} />
         </Route>
 
