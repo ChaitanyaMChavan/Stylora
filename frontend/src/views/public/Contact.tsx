@@ -15,7 +15,7 @@ export const Contact: React.FC = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 py-6 animate-fade-in items-stretch">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 py-6 px-8 animate-fade-in items-stretch">
       
       {/* Heavy Luxury Info Block Card */}
       <div className="lg:col-span-4 bg-neutral-950 border border-black text-white p-8 flex flex-col justify-between space-y-12 relative overflow-hidden">

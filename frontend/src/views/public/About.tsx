@@ -22,7 +22,7 @@ export const About: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-20 py-6 animate-fade-in">
+    <div className="space-y-20 py-6 px-8 animate-fade-in">
       {/* Editorial Hero Banner */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border-b border-black/5 pb-14">
         <div className="lg:col-span-7 space-y-6">
@@ -90,7 +90,7 @@ export const About: React.FC = () => {
         </div>
         <div className="z-10 shrink-0">
           <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-[#D4AF37] bg-transparent text-[#D4AF37] px-8 py-3.5 text-[10px] uppercase tracking-widest font-bold hover:bg-[#D4AF37] hover:text-black transition-all duration-300 font-mono cursor-pointer">
-            Apply to the Index Matrix
+            Apply to Stylora
           </button>
         </div>
       </div>

@@ -101,13 +101,21 @@ export const DesignerProfile: React.FC = () => {
         return;
       }
 
+      // Enforce contact phone number is exactly 10 digits
+      const cleanedPhone = contactPhone.replace(/\D/g, '');
+      if (cleanedPhone.length !== 10) {
+        setErrorMessage("Contact phone number must be exactly 10 digits.");
+        setBookingStatus('idle');
+        return;
+      }
+
       // 🔍 PERFECT BACKEND MATCH MATRIX
       const appointmentPayload = {
         designerId: designerId,                        // Expected by backend
         appointmentDate: appointmentDate,             // Backend expects 'appointmentDate', NOT 'date'
         appointmentTime: appointmentTime,             // Backend expects 'appointmentTime', NOT 'time'
         serviceType: serviceType || "Consultation",   // 🌟 REQUIRED BY BACKEND
-        contactPhone: contactPhone.trim(),            // 🌟 REQUIRED BY BACKEND
+        contactPhone: cleanedPhone,                   // 🌟 REQUIRED BY BACKEND
         location: consultationLocation.trim(),         // Expected by backend
         notes: clientNotes.trim() || "No custom notes registered." // Optional
       };
@@ -335,9 +343,16 @@ export const DesignerProfile: React.FC = () => {
     <input 
       type="tel" 
       required 
+      minLength={10}
+      maxLength={10}
       placeholder="Enter your 10-digit mobile number"
       value={contactPhone}
-      onChange={(e) => setContactPhone(e.target.value)}
+      onChange={(e) => {
+        const val = e.target.value.replace(/\D/g, '');
+        if (val.length <= 10) {
+          setContactPhone(val);
+        }
+      }}
       className="w-full bg-[#FAFAFA] border border-neutral-200 p-2.5 text-xs font-mono text-black focus:outline-none"
     />
   </div>

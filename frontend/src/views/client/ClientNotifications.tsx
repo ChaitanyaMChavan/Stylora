@@ -69,9 +69,6 @@ export const ClientNotifications: React.FC = () => {
       {/* Editorial Header Section */}
       <div className="mb-12 border-b border-neutral-200/60 pb-6 flex justify-between items-end">
         <div>
-          <span className="text-[10px] font-mono tracking-widest text-[#D4AF37] uppercase font-bold block mb-2">
-            System Message Hub (Live API Connected)
-          </span>
           <h1 className="text-3xl font-luxury uppercase tracking-wider text-black">
             Notifications
           </h1>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { SlidersHorizontal, Loader2, MapPin, Briefcase } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 // Define the shape matching your backend mongoose schemas
 interface DesignerProfileData {
@@ -23,9 +24,13 @@ interface DesignerProfileData {
 
 export const Designers: React.FC = () => {
   const navigate = useNavigate();
+  const { token } = useAuth();
   const [designers, setDesigners] = useState<DesignerProfileData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
+
+  const isAuthenticated = !!token || !!localStorage.getItem('stylora_auth_token');
 
   useEffect(() => {
     const fetchLiveDesigners = async () => {
@@ -59,17 +64,14 @@ export const Designers: React.FC = () => {
             Secure Gateway Indexes
           </span>
           <h1 className="text-4xl font-luxury uppercase tracking-wider text-black">
-            The House Roster
+            The Designer Showcase
           </h1>
           <p className="text-xs font-mono text-neutral-400 mt-2 tracking-wide">
-            Viewing authenticated active spatial interior architect profiles dynamically pulled from database.
+            Connecting you with verified, active design professionals in real time.
           </p>
         </div>
 
-        <button className="inline-flex items-center gap-2 border border-neutral-200 bg-white px-5 py-3 text-[10px] font-mono tracking-widest uppercase hover:bg-neutral-50 hover:border-black transition-all text-black rounded-none">
-          <SlidersHorizontal size={12} />
-          <span>Refine Matrix View</span>
-        </button>
+
       </div>
 
       {/* Logic Gate Rendering States */}
@@ -132,7 +134,13 @@ export const Designers: React.FC = () => {
                   </div>
                   
                   <button
-                    onClick={() => navigate(`/designer/${designer._id}`)}
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        setShowLoginModal(true);
+                      } else {
+                        navigate(`/designer/${designer._id}`);
+                      }
+                    }}
                     className="text-black font-bold hover:text-[#D4AF37] transition-colors border-b border-black hover:border-[#D4AF37] pb-0.5 text-[10px]"
                   >
                     Enter Atelier
@@ -141,6 +149,35 @@ export const Designers: React.FC = () => {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Auth Gate Modal Dialog */}
+      {showLoginModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white border border-neutral-200 p-8 max-w-md w-full mx-4 relative animate-scale-up">
+            <h3 className="text-xl font-luxury uppercase tracking-widest text-black mb-4">Authentication Required</h3>
+            <p className="text-xs font-mono text-neutral-500 tracking-wide mb-8 uppercase leading-relaxed">
+              Please sign in to your Stylora workspace account to explore complete designer portfolios and architectural matrix details.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={() => {
+                  setShowLoginModal(false);
+                  navigate('/login');
+                }}
+                className="w-full bg-black text-white py-3 text-[10px] font-mono tracking-widest uppercase hover:bg-neutral-900 transition-colors rounded-none font-bold"
+              >
+                Sign In to Account
+              </button>
+              <button 
+                onClick={() => setShowLoginModal(false)}
+                className="w-full bg-white border border-neutral-200 text-neutral-500 py-3 text-[10px] font-mono tracking-widest uppercase hover:text-black hover:border-black transition-colors rounded-none"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

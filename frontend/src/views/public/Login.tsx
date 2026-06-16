@@ -41,8 +41,8 @@ export const Login: React.FC = () => {
           <div className="inline-flex p-3 bg-neutral-950 text-white border border-black rounded-none mb-1">
             <Shield size={20} className="text-[#D4AF37]" />
           </div>
-          <h1 className="text-2xl font-luxury uppercase tracking-wider text-black">Atelier Credentials</h1>
-          <p className="text-xs text-neutral-400 font-mono">Input secure entry signature matrix</p>
+          <h1 className="text-2xl font-luxury uppercase tracking-wider text-black">User Credentials</h1>
+          <p className="text-xs text-neutral-400 font-mono">Input your account credentials</p>
         </div>
 
         {/* Display System Error Alert Messages */}
@@ -57,7 +57,7 @@ export const Login: React.FC = () => {
         <form onSubmit={handleFormSubmission} className="space-y-5">
           <div className="space-y-1">
             <label className="block text-[9px] tracking-widest uppercase text-neutral-400 font-bold flex items-center gap-1">
-              <Mail size={10} /> Account Identity Address
+              <Mail size={10} /> Email Address
             </label>
             <input 
               type="email" 
@@ -72,7 +72,7 @@ export const Login: React.FC = () => {
 
           <div className="space-y-1">
             <label className="block text-[9px] tracking-widest uppercase text-neutral-400 font-bold flex items-center gap-1">
-              <KeyRound size={10} /> Access Keyphrase
+              <KeyRound size={10} /> Password
             </label>
             <input 
               type="password" 
